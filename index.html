@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한글 워들 치트키 (Wordle Helper & Cheat)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Hangul.js for Virtual Keyboard assembly -->
+    <script src="https://unpkg.com/hangul-js" type="text/javascript"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --color-grey: #64748b;
+            --color-yellow: #d97706;
+            --color-green: #059669;
+            --color-accent: #0f172a;
+            --color-accent-hover: #1e293b;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        main {
+            display: grid;
+            gap: 1.75rem;
+            width: 100%;
+        }
+
+        #cheat-view {
+            grid-template-columns: 1.1fr 1.2fr 0.9fr;
+            max-width: 1320px;
+        }
+
+        #game-view {
+            grid-template-columns: 1.1fr 1fr;
+            max-width: 1000px;
+        }
+
+        @media (max-width: 1100px) {
+            #cheat-view {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .candidates-section {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            #cheat-view,
+            #game-view {
+                grid-template-columns: 1fr;
+            }
+
+            .candidates-section {
+                grid-column: auto;
+            }
+        }
+
+        /* 공통 카드 스타일 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .mode-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 7px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 입력 및 히스토리 영역 */
+        .solver-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 새로운 입력 행 */
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .tile-input {
+            width: 52px;
+            height: 52px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+        }
+
+        .tile-input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+        }
+
+        /* 인터랙티브 힌트 선택기 */
+        .hint-selector {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.25rem;
+        }
+
+        .tile-hint {
+            width: 52px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        /* 상태별 색상 클래스 */
+        .state-grey {
+            background-color: var(--color-grey);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #ffffff;
+        }
+
+        .state-yellow {
+            background-color: var(--color-yellow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #ffffff;
+        }
+
+        .state-green {
+            background-color: var(--color-green);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: #ffffff;
+        }
+
+        .tile-hint:hover {
+            filter: brightness(0.92);
+            transform: translateY(-1px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: #ffffff;
+            border: 1px solid var(--color-accent);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--text-secondary);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 입력 기록 (History) */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .history-word {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .history-tile {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* 추천 결과 영역 */
+        .recommend-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .recommend-item {
+            padding: 0.9rem 1.1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #ffffff;
+        }
+
+        .recommend-item:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .candidate-count {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .candidate-count span {
+            color: var(--color-green);
+            font-weight: 700;
+        }
+
+        /* 후보 리스트 영역 */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .candidates-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .candidates-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .candidate-badge {
+            padding: 0.55rem;
+            background: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .candidate-badge:hover {
+            background: #f1f5f9;
+            border-color: var(--color-accent);
+            transform: translateY(-1px);
+        }
+
+        .placeholder-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 안내 가이드 */
+        .guide-box {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .guide-box ul {
+            list-style-position: inside;
+            margin-top: 0.25rem;
+        }
+
+        .top-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .top-tab-btn {
+            padding: 0.6rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 25px;
+            border: 2px solid var(--card-border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .top-tab-btn.active {
+            background: var(--text-primary);
+            color: #fff;
+            border-color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+
+        /* Game Board Styles */
+        .game-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .game-tile {
+            width: 55px;
+            height: 55px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+
+        .game-tile.filled {
+            border-color: var(--text-secondary);
+        }
+
+        .game-tile.state-green {
+            background-color: var(--color-green);
+            border-color: var(--color-green);
+            color: #fff;
+        }
+
+        .game-tile.state-yellow {
+            background-color: var(--color-yellow);
+            border-color: var(--color-yellow);
+            color: #fff;
+        }
+
+        .game-tile.state-grey {
+            background-color: var(--color-grey);
+            border-color: var(--color-grey);
+            color: #fff;
+        }
+
+        .vk-row {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .vk-key {
+            height: 48px;
+            min-width: 32px;
+            flex: 1;
+            border-radius: 8px;
+            border: none;
+            background: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.1s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vk-key:active {
+            filter: brightness(0.9);
+            transform: scale(0.95);
+        }
+
+        .vk-wide {
+            flex: 1.5;
+            font-size: 1.2rem;
+        }
+
+        .vk-key.state-green {
+            background-color: var(--color-green);
+            color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .vk-key.state-yellow {
+            background-color: var(--color-yellow);
+            color: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .vk-key.state-grey {
+            background-color: var(--color-grey);
+            color: #fff;
+            opacity: 0.55;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .game-tile,
+        .input-tile,
+        .vk-key,
+        .tab-btn,
+        .btn,
+        .recommend-item,
+        .mode-tabs {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>한글 워들 도우미 & 치트키</h1>
+        <p style="margin-bottom: 1rem;">오프라인 100% 브라우저 비트마스킹 섀넌 엔트로피 기반 한국어 워들 Solver</p>
+        <div class="top-tabs">
+            <button class="top-tab-btn active" id="top-tab-cheat" onclick="switchMainTab('cheat')">치트키 모드</button>
+            <button class="top-tab-btn" id="top-tab-game" onclick="switchMainTab('game')">직접 플레이</button>
+        </div>
+    </header>
+
+    <main id="cheat-view">
+        <!-- 왼쪽: 단어 입력 및 기록 -->
+        <div class="solver-section">
+            <div class="card">
+                <h2 class="card-title"
+                    style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem;">
+                    <span>힌트 입력</span>
+                    <div class="mode-tabs">
+                        <button class="tab-btn active" id="tab-5" onclick="switchMode(5)">5자모</button>
+                        <button class="tab-btn" id="tab-6" onclick="switchMode(6)">6자모</button>
+                        <button class="tab-btn" id="tab-7" onclick="switchMode(7)">7자모</button>
+                    </div>
+                </h2>
+                <div class="input-container">
+                    <div class="input-row" id="input-tiles-container">
+                        <!-- Dynamically generated -->
+                    </div>
+                    <!-- 클릭하여 색상 변경 안내 -->
+                    <div class="hint-selector" id="hint-selector-container">
+                        <!-- Dynamically generated -->
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="resetInputRow()">비우기</button>
+                        <button class="btn btn-primary" id="btn-add" onclick="addCurrentGuess()" disabled>확인 및 추가</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
+                <h2 class="card-title" style="justify-content: space-between;">
+                    <span>진행 기록</span>
+                    <button class="btn-delete" style="color: var(--text-secondary);" onclick="resetAll()">전체 초기화</button>
+                </h2>
+                <div class="history-list" id="history-container"
+                    style="height: 380px; overflow-y: auto; padding-right: 5px;">
+                    <div class="placeholder-text">아직 입력된 기록이 없습니다. 첫 턴 추천 단어로 시작해 보세요!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 추천 결과 및 후보군 -->
+        <div class="recommend-section">
+            <div class="card" style="padding: 1.5rem;">
+                <h2 class="card-title"
+                    style="justify-content: space-between; margin-bottom: 1rem; border-bottom: none; padding-bottom: 0;">
+                    <span>추천 단어 옵션</span>
+                    <span class="candidate-count" style="font-size: 0.85rem; font-weight: normal;">
+                        남은 후보: <span id="cand-count" style="color: var(--color-green); font-weight: 700;">23,713</span>개
+                    </span>
+                </h2>
+                <div id="recommendations-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 세번째 오른쪽: 정답 후보군 -->
+        <div class="candidates-section" style="display: flex; flex-direction: column;">
+            <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
+                <h2 class="card-title">정답 후보군</h2>
+                <div class="list-container" style="flex-grow: 1; height: 500px; overflow-y: auto; padding-right: 5px;">
+                    <div class="candidates-grid" id="candidates-container">
+                        <div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">
+                            후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 가이드 -->
+        <div class="guide-box" style="grid-column: 1 / -1; margin-top: 1rem;">
+            <strong>사용 방법 가이드</strong>
+            <ul style="margin-top: 0.5rem;">
+                <li>첫 턴은 추천 단어 중 마음에 드는 단어(예: <strong>[기낭]</strong> 또는 <strong>[가위]</strong>)를 클릭해 보세요. 자모가 자동으로 입력창에 채워집니다!</li>
+                <li>채워진 단어를 실제 워들 게임에 입력한 후, 게임 결과로 얻은 초록/노랑/회색 힌트를 위 입력 창에 똑같이 만들어 줍니다.</li>
+                <li>자모 칸 아래의 <strong>[회색]</strong> 버튼들을 클릭하면 <strong>회색(없음) -> 노란색(위치 다름) -> 초록색(일치)</strong> 순으로 상태가 바뀝니다.</li>
+                <li><strong>[확인 및 추가]</strong> 버튼을 누르면 이력에 등록되고, 다음으로 가장 효율적인 추천 단어 옵션 5가지가 실시간으로 계산되어 나타납니다!</li>
+            </ul>
+        </div>
+
+        <!-- 알고리즘 작동 원리 -->
+        <div class="guide-box"
+            style="grid-column: 1 / -1; margin-top: 0; background: #ffffff; border: 1px solid var(--card-border);">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 0.75rem; font-size: 0.95rem;">작동 원리 및 알고리즘</strong>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 0.5rem;">
+                <div>
+                    <span
+                        style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 0.25rem;">1. 자모 분해 매칭</span>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">한글 워들은 글자 단위가 아닌
+                        <strong>초성/중성/종성(자모)</strong> 단위로 판정합니다. 예: '기낭' ➔ 'ㄱ, ㅣ, ㄴ, ㅏ, ㅇ' 총 5개의 자모로 분해하여 힌트를 매칭합니다.
+                    </p>
+                </div>
+                <div>
+                    <span
+                        style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 0.25rem;">2. 섀넌 엔트로피 (Shannon Entropy)</span>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">남은 후보 단어들을 가장 많이 제거할 수 있는 '수학적 정보량'을 계산합니다. 각 단어를 입력했을 때 평균적으로 후보군을 가장 많이 줄여주는 단어를 추천합니다.</p>
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <span
+                        style="color: var(--text-primary); font-weight: 600; display: block; margin-bottom: 0.25rem;">3. 동적 게임 전략</span>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
+                        <strong>초반전 (1~3턴):</strong> 최대한 많은 후보 단어를 필터링하기 위해 정보 획득량(엔트로피)이 가장 높은 단어를 최우선으로 추천합니다.<br>
+                        <strong>후반전 (4턴 이후):</strong> 남은 후보군 중 한국어 실생활 단어 사전을 기반으로 한 <strong>일상 명사</strong>에 높은 가중치를 부여하여 정답을 직접 맞출 확률을 극대화합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="game-view" style="display: none;">
+        <div class="solver-section">
+            <div class="card"
+                style="display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%;">
+                <div class="mode-tabs" style="margin-bottom: 0.5rem;">
+                    <button class="tab-btn active" id="game-tab-5" onclick="switchGameMode(5)">5자모</button>
+                    <button class="tab-btn" id="game-tab-6" onclick="switchGameMode(6)">6자모</button>
+                    <button class="tab-btn" id="game-tab-7" onclick="switchGameMode(7)">7자모</button>
+                </div>
+
+                <div id="game-board" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                    <!-- JS generated -->
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem;">
+                    PC는 키보드로도 입력 가능합니다.</div>
+
+            </div>
+        </div>
+
+        <div class="recommend-section">
+            <div class="card"
+                style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; padding: 1rem 1.5rem;">
+                <div id="game-message"
+                    style="font-size: 1rem; font-weight: 700; color: var(--color-yellow); text-align: center; min-height: 1.5rem;">
+                </div>
+
+                <div id="virtual-keyboard"
+                    style="display: flex; flex-direction: column; gap: 0.4rem; width: 100%; max-width: 350px; align-items: center;">
+                    <div class="vk-row" style="width: 100%;">
+                        <button class="vk-key" onclick="vkClick('ㅂ')">ㅂ</button>
+                        <button class="vk-key" onclick="vkClick('ㅈ')">ㅈ</button>
+                        <button class="vk-key" onclick="vkClick('ㄷ')">ㄷ</button>
+                        <button class="vk-key" onclick="vkClick('ㄱ')">ㄱ</button>
+                        <button class="vk-key" onclick="vkClick('ㅅ')">ㅅ</button>
+                        <button class="vk-key" onclick="vkClick('ㅛ')">ㅛ</button>
+                        <button class="vk-key" onclick="vkClick('ㅕ')">ㅕ</button>
+                        <button class="vk-key" onclick="vkClick('ㅑ')">ㅑ</button>
+                        <button class="vk-key"
+                            style="font-size: 1.1rem; background-color: var(--color-grey); color: white;"
+                            onclick="vkBackspace()">⌫</button>
+                    </div>
+                    <div class="vk-row" style="width: 100%;">
+                        <button class="vk-key" onclick="vkClick('ㅁ')">ㅁ</button>
+                        <button class="vk-key" onclick="vkClick('ㄴ')">ㄴ</button>
+                        <button class="vk-key" onclick="vkClick('ㅇ')">ㅇ</button>
+                        <button class="vk-key" onclick="vkClick('ㄹ')">ㄹ</button>
+                        <button class="vk-key" onclick="vkClick('ㅎ')">ㅎ</button>
+                        <button class="vk-key" onclick="vkClick('ㅗ')">ㅗ</button>
+                        <button class="vk-key" onclick="vkClick('ㅓ')">ㅓ</button>
+                        <button class="vk-key" onclick="vkClick('ㅏ')">ㅏ</button>
+                        <button class="vk-key" onclick="vkClick('ㅣ')">ㅣ</button>
+                    </div>
+                    <div class="vk-row" style="width: 77.8%;">
+                        <button class="vk-key" onclick="vkClick('ㅋ')">ㅋ</button>
+                        <button class="vk-key" onclick="vkClick('ㅌ')">ㅌ</button>
+                        <button class="vk-key" onclick="vkClick('ㅊ')">ㅊ</button>
+                        <button class="vk-key" onclick="vkClick('ㅍ')">ㅍ</button>
+                        <button class="vk-key" onclick="vkClick('ㅠ')">ㅠ</button>
+                        <button class="vk-key" onclick="vkClick('ㅡ')">ㅡ</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="submitGameGuess()"
+                    style="width: 100%; max-width: 350px; font-size: 1.1rem; padding: 0.85rem; margin-top: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">입력하기 (ENTER)</button>
+            </div>
+
+            <div class="card" style="display: flex; justify-content: center; width: 100%; padding: 1.5rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="initGame(currentGameLen)">새 게임 시작</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="solver.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cheatMode.js"></script>
+    <script src="js/gameMode.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>
