@@ -20,8 +20,7 @@ function initGame(len = currentGameLen) {
     let validWords = commonList.filter(w => {
         const jamos = decomposeKoreanWord(w);
         if (jamos.length !== len) return false;
-        if (len === 5 && w.length !== 2) return false;
-        if (len === 7 && w.length !== 3) return false;
+        
         return true;
     });
 
@@ -30,8 +29,7 @@ function initGame(len = currentGameLen) {
         validWords = ALL_WORDS.filter(w => {
             const jamos = decomposeKoreanWord(w);
             if (jamos.length !== len) return false;
-            if (len === 5 && w.length !== 2) return false;
-            if (len === 7 && w.length !== 3) return false;
+            
             return true;
         });
     }

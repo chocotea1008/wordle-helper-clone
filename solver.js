@@ -40,8 +40,7 @@ function initValidWords(jamoLen) {
         let jamos = decomposeKoreanWord(word);
         if (jamos.length === jamoLen) {
             // 단어의 규칙 모드 제한: 5자모는 2글자, 7자모는 3글자
-            if (jamoLen === 5 && word.length !== 2) continue;
-            if (jamoLen === 7 && word.length !== 3) continue;
+            
             
             words.push({ word, jamos });
         }
