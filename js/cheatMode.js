@@ -183,7 +183,7 @@ function renderDefaultRecommendations(len) {
             </div>
         `;
     } else {
-        recContainer.innerHTML = `<div class="placeholder-text" style="padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1; width: 100%;">알 수 없는 자모 길이입니다.</div>`;
+        recContainer.innerHTML = '<div class="placeholder-text" style="padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1; width: 100%;">알 수 없는 자모 길이입니다.</div>';
     }
 
     const candContainer = document.getElementById('candidates-container');
@@ -221,7 +221,6 @@ function renderInputTiles() {
         input.addEventListener('input', (e) => {
             const val = e.target.value;
             if (val.length > 0) {
-                // 한글 1자만 취함
                 input.value = val.charAt(val.length - 1);
                 if (i < currentJamoLen - 1) {
                     inputs[i + 1].focus();
@@ -256,10 +255,12 @@ function renderHintSelector() {
         const stateObj = stateMap[stateKey] || stateMap['grey'];
 
         const btn = document.createElement('div');
-        btn.className = `tile-hint ${stateObj.class}`;
+        btn.className = 'tile-hint ' + stateObj.class;
         btn.innerText = stateObj.text;
         btn.title = '클릭하여 힌트 상태 변경 (회색 -> 노랑 -> 초록)';
-        btn.onclick = () => toggleTileState(i);
+        btn.onclick = (function(index) {
+            return function() { toggleTileState(index); };
+        })(i);
 
         container.appendChild(btn);
     }
@@ -292,7 +293,7 @@ function selectRecommendWord(word) {
         }
     }
     updateAddButtonState();
-    showToast(`'${word}' 단어가 자모(${jamos.join('')})로 입력되었습니다!`);
+    showToast("'" + word + "' 단어가 자모(" + jamos.join('') + ")로 입력되었습니다!");
 }
 
 // 8. 현재 입력행 비우기
@@ -382,7 +383,7 @@ function updateHistoryUI() {
             if (hintVal === '노') stateClass = 'state-yellow';
             if (hintVal === '초') stateClass = 'state-green';
 
-            tile.className = `history-tile ${stateClass}`;
+            tile.className = 'history-tile ' + stateClass;
             tile.innerText = jamos[i] || '';
             wordDiv.appendChild(tile);
         }
@@ -390,7 +391,7 @@ function updateHistoryUI() {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-delete';
         deleteBtn.innerText = '삭제';
-        deleteBtn.onclick = () => deleteHistoryItem(index);
+        deleteBtn.onclick = function() { deleteHistoryItem(index); };
 
         itemDiv.appendChild(wordDiv);
         itemDiv.appendChild(deleteBtn);
@@ -412,12 +413,7 @@ async function fetchRecommendation() {
     try {
         document.getElementById('cand-count').innerText = "...";
         const recContainer = document.getElementById('recommendations-container');
-        recContainer.innerHTML = `
-            <div style="text-align:center; padding: 2rem; color: var(--text-secondary); width: 100%;">
-                <div class="spinner" style="margin: 0 auto 1rem auto; width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top: 3px solid var(--text-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                수만 가지 경우의 수를 비트마스킹 연산하여 최적 단어를 추천 중입니다...
-            </div>
-        `;
+        recContainer.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary); width: 100%;"><div class="spinner" style="margin: 0 auto 1rem auto; width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top: 3px solid var(--text-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>수만 가지 경우의 수를 비트마스킹 연산하여 최적 단어를 추천 중입니다...</div>';
 
         await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -436,19 +432,9 @@ async function fetchRecommendation() {
                 data.recommendations.forEach(rec => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'recommend-item';
-                    itemDiv.onclick = () => selectRecommendWord(rec.word);
+                    itemDiv.onclick = function() { selectRecommendWord(rec.word); };
 
-                    itemDiv.innerHTML = `
-                        <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">${rec.strategy}</span>
-                            <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">${rec.word}</span>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">${rec.reason}</p>
-                        </div>
-                        <div style="text-align: right; min-width: 85px;">
-                            <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                            <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">${rec.expected_remain}개</span>
-                        </div>
-                    `;
+                    itemDiv.innerHTML = '<div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;"><span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">' + rec.strategy + '</span><span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">' + rec.word + '</span><p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">' + rec.reason + '</p></div><div style="text-align: right; min-width: 85px;"><span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span><span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">' + rec.expected_remain + '개</span></div>';
                     recContainer.appendChild(itemDiv);
                 });
             } else {
@@ -463,16 +449,12 @@ async function fetchRecommendation() {
                         const badge = document.createElement('div');
                         badge.className = 'candidate-badge';
                         badge.innerText = word;
-                        badge.onclick = () => selectRecommendWord(word);
+                        badge.onclick = function() { selectRecommendWord(word); };
                         badge.title = '클릭하여 입력창에 채우기';
                         candContainer.appendChild(badge);
                     });
                 } else {
-                    candContainer.innerHTML = `
-                        <div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">
-                            후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다. (현재 남은 후보: ${data.remain_count.toLocaleString()}개)
-                        </div>
-                    `;
+                    candContainer.innerHTML = '<div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다. (현재 남은 후보: ' + data.remain_count.toLocaleString() + '개)</div>';
                 }
             }
         } else {
