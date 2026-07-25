@@ -188,3 +188,65 @@ function renderGameBoard() {
         board.appendChild(row);
     }
 }
+
+function toggleCustomAnswerUI() {
+    const container = document.getElementById('custom-answer-container');
+    if (!container) return;
+    const isHidden = container.style.display === 'none' || container.style.display === '';
+    container.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden) {
+        const inp = document.getElementById('custom-answer-input');
+        if (inp) {
+            inp.value = '';
+            inp.focus();
+        }
+        const errDiv = document.getElementById('custom-answer-error');
+        if (errDiv) errDiv.style.display = 'none';
+    }
+}
+
+function setCustomAnswer() {
+    const inp = document.getElementById('custom-answer-input');
+    const errDiv = document.getElementById('custom-answer-error');
+    if (!inp) return;
+
+    const word = inp.value.trim();
+    if (!word) {
+        if (errDiv) {
+            errDiv.innerText = '정답으로 지정할 단어를 입력해주세요.';
+            errDiv.style.display = 'block';
+        }
+        return;
+    }
+
+    const jamos = decomposeKoreanWord(word);
+    if (jamos.length !== currentGameLen) {
+        if (errDiv) {
+            errDiv.innerText = `'${word}' 단어는 ${jamos.length}자모입니다. 현재 설정된 ${currentGameLen}자모 모드와 맞지 않습니다.`;
+            errDiv.style.display = 'block';
+        }
+        return;
+    }
+
+    gameAnswer = word;
+    gameAnswerJamos = jamos;
+    gameHistory = [];
+    currentTypedJamos = [];
+    gameOver = false;
+
+    const msg = document.getElementById('game-message');
+    if (msg) {
+        msg.innerText = "🎯 정답이 '" + word + "'(으)로 지정되었습니다!";
+        msg.style.color = "var(--color-green)";
+    }
+
+    renderGameBoard();
+
+    if (errDiv) errDiv.style.display = 'none';
+    const container = document.getElementById('custom-answer-container');
+    if (container) container.style.display = 'none';
+
+    if (typeof showToast === 'function') {
+        showToast("정답이 '" + word + "'(으)로 지정되었습니다.");
+    }
+}

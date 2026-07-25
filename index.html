@@ -811,8 +811,19 @@
                     style="width: 100%; max-width: 350px; font-size: 1.1rem; padding: 0.85rem; margin-top: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">입력하기 (ENTER)</button>
             </div>
 
-            <div class="card" style="display: flex; justify-content: center; width: 100%; padding: 1.5rem;">
-                <button class="btn btn-secondary" style="width: 100%;" onclick="initGame(currentGameLen)">새 게임 시작</button>
+            <div class="card" style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%; padding: 1.25rem;">
+                <div style="display: flex; gap: 0.5rem; width: 100%;">
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="initGame(currentGameLen)">새 게임 시작 (무작위)</button>
+                    <button class="btn btn-secondary" style="flex: 1; background: var(--bg-hover);" onclick="toggleCustomAnswerUI()">정답 직접 지정 ⚙️</button>
+                </div>
+                <div id="custom-answer-container" style="display: none; flex-direction: column; gap: 0.5rem; width: 100%; background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">정답으로 출제할 한글 단어 입력:</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="custom-answer-input" placeholder="예: 가위, 한국, 독수리..." style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-weight: 600;" onkeydown="if(event.key==='Enter') setCustomAnswer()">
+                        <button class="btn btn-primary" onclick="setCustomAnswer()" style="padding: 0.5rem 1rem;">적용</button>
+                    </div>
+                    <div id="custom-answer-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></div>
+                </div>
             </div>
         </div>
     </main>
