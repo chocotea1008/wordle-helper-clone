@@ -1,199 +1,8 @@
 // --- 치트키 (Wordle Solver) 모드 컨트롤러 ---
 
-// 1. 기본 추천 단어 (첫 턴) 렌더링
+// 1. 추천 단어 동적 연산 렌더링 (하드코딩 제거: 동적 비트마스킹 엔진 100% 연산)
 function renderDefaultRecommendations(len) {
-    const recContainer = document.getElementById('recommendations-container');
-    if (!recContainer) return;
-
-    if (len === 5) {
-        document.getElementById('cand-count').innerText = '23,713';
-        recContainer.innerHTML = `
-            <div class="recommend-item" onclick="selectRecommendWord('기낭')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">균형 추천 (최적)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">기낭</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">첫 턴에 수학적으로 가장 안정적이고 많은 정보를 얻을 수 있는 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">526.3개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('가외')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">직접 타격 (정답 후보)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">가외</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">첫 턴에 바로 정답을 노려볼 수 있으면서도 매우 높은 정보 획득량을 가집니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">426.8개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('가위')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">일상 단어 우선</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">가위</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">가장 친숙한 일상 단어 중 정보 획득량이 가장 높은 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">460.5개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('구애')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">모음 집중 탐색</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">구애</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">모음(ㅜ, ㅏ, ㅣ)을 집중적으로 탐색하여 모음 구성을 빠르게 파악합니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">462.0개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('강리')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">자모 다양성 (필터링)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">강리</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">다양한 자음과 모음을 골고루 사용하여 초반 넓은 범위를 필터링합니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남는 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">491.3개</span>
-                </div>
-            </div>
-        `;
-    } else if (len === 6) {
-        document.getElementById('cand-count').innerText = '45,163';
-        recContainer.innerHTML = `
-            <div class="recommend-item" onclick="selectRecommendWord('한국')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">최고 추천 (총점)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">한국</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">정확히 6자모(ㅎ,ㅏ,ㄴ,ㄱ,ㅜ,ㄱ)로 구성된 최적의 첫 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">125.4개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('삭제')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">직접 타격 (정답 후보)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">삭제</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">복합모음 ㅔ(ㅓ+ㅣ)를 포함한 6자모(ㅅ,ㅏ,ㄱ,ㅈ,ㅓ,ㅣ) 강력한 탐색 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">142.0개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('바나나')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">3글자 6자모 추천</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">바나나</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">3글자 6자모(ㅂ,ㅏ,ㄴ,ㅏ,ㄴ,ㅏ)로 친숙한 일상 대표 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">158.2개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('산길')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">자음/모음 균형</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">산길</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">받침 ㄴ, ㄹ을 테스트할 수 있는 6자모(ㅅ,ㅏ,ㄴ,ㄱ,ㅣ,ㄹ) 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">130.5개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('물결')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">자모 다양성</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">물결</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">모음 ㅜ, ㅕ를 테스트하는 6자모(ㅁ,ㅜ,ㄹ,ㄱ,ㅕ,ㄹ) 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">135.1개</span>
-                </div>
-            </div>
-        `;
-    } else if (len === 7) {
-        document.getElementById('cand-count').innerText = '23,435';
-        recContainer.innerHTML = `
-            <div class="recommend-item" onclick="selectRecommendWord('손뼉')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">2글자 7자모 (최고)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">손뼉</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">2글자 7자모(ㅅ,ㅗ,ㄴ,ㅂ,ㅂ,ㅕ,ㄱ) 쌍자음 ㅃ을 포함한 강력 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">110.2개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('상고지')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">3글자 7자모 (최적)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">상고지</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">3글자 7자모(ㅅ,ㅏ,ㅇ,ㄱ,ㅗ,ㅈ,ㅣ) 높은 정보 획득량 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">69.2개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('고동로')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">정답 타격 (단어 후보)</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">고동로</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">7자모(ㄱ,ㅗ,ㄷ,ㅗ,ㅇ,ㄹ,ㅗ) 유력한 탐색 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">470.8개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('알구지')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">일반 추천</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">알구지</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">안정적인 필터링 능력을 보여주는 7자모 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">69.7개</span>
-                </div>
-            </div>
-            <div class="recommend-item" onclick="selectRecommendWord('오락지')">
-                <div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;">
-                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">일반 추천</span>
-                    <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">오락지</span>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">안정적인 필터링 능력을 보여주는 7자모 추천 단어입니다.</p>
-                </div>
-                <div style="text-align: right; min-width: 85px;">
-                    <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span>
-                    <span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">70.0개</span>
-                </div>
-            </div>
-        `;
-    } else {
-        recContainer.innerHTML = '<div class="placeholder-text" style="padding: 2rem; color: var(--text-secondary); grid-column: 1 / -1; width: 100%;">알 수 없는 자모 길이입니다.</div>';
-    }
-
-    const candContainer = document.getElementById('candidates-container');
-    if (candContainer) {
-        candContainer.innerHTML = `
-            <div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">
-                후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다.
-            </div>
-        `;
-    }
+    fetchRecommendation();
 }
 
 // 2. 입력 필드 및 힌트 선택기 초기화
@@ -313,7 +122,7 @@ function switchMode(len) {
     history = [];
     initInputFields();
     updateHistoryUI();
-    renderDefaultRecommendations(len);
+    fetchRecommendation();
 }
 
 // 10. 현재 추측 추가 및 추천 실행
@@ -342,7 +151,7 @@ function resetAll() {
     history = [];
     initInputFields();
     updateHistoryUI();
-    renderDefaultRecommendations(currentJamoLen);
+    fetchRecommendation();
     showToast("전체 기록이 초기화되었습니다.");
 }
 
@@ -350,11 +159,7 @@ function resetAll() {
 function deleteHistoryItem(index) {
     history.splice(index, 1);
     updateHistoryUI();
-    if (history.length === 0) {
-        renderDefaultRecommendations(currentJamoLen);
-    } else {
-        fetchRecommendation();
-    }
+    fetchRecommendation();
 }
 
 // 13. 히스토리 UI 업데이트
@@ -363,7 +168,7 @@ function updateHistoryUI() {
     if (!container) return;
 
     if (history.length === 0) {
-        container.innerHTML = '<div class="placeholder-text">아직 입력된 기록이 없습니다. 첫 턴 추천 단어로 시작해 보세요!</div>';
+        container.innerHTML = '<div class="placeholder-text">아직 입력된 기록이 없습니다. 추천 단어로 시작해 보세요!</div>';
         return;
     }
 
@@ -404,11 +209,6 @@ let currentSolveId = 0;
 // 14. 프론트엔드 실시간 연산 및 추천 단어 가져오기
 async function fetchRecommendation() {
     const solveId = ++currentSolveId;
-
-    if (history.length === 0) {
-        renderDefaultRecommendations(currentJamoLen);
-        return;
-    }
 
     try {
         document.getElementById('cand-count').innerText = "...";
