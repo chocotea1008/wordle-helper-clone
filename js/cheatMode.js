@@ -48,15 +48,20 @@ function renderDefaultRecommendations(len) {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'recommend-item';
         itemDiv.onclick = function() { selectRecommendWord(rec.word); };
-        itemDiv.style.animationDelay = `${idx * 0.05}s`;
 
         itemDiv.innerHTML = `
             <div class="rec-rank">${idx + 1}</div>
             <div class="rec-body">
-                <div><span class="rec-word">${rec.word}</span><span class="rec-strategy">${rec.strategy}</span></div>
+                <div class="rec-header">
+                    <span class="rec-word">${rec.word}</span>
+                    <span class="rec-strategy">${rec.strategy}</span>
+                </div>
                 <div class="rec-reason">${rec.reason}</div>
             </div>
-            <div class="rec-remain">${rec.remain}</div>
+            <div class="rec-remain-box">
+                <span class="rec-remain-label">재귀적 정답 수렴</span>
+                <span class="rec-remain-val">${rec.remain}</span>
+            </div>
         `;
         recContainer.appendChild(itemDiv);
     });
@@ -337,12 +342,25 @@ async function fetchRecommendation() {
             recContainer.innerHTML = '';
 
             if (data.recommendations && data.recommendations.length > 0) {
-                data.recommendations.forEach(rec => {
+                data.recommendations.forEach((rec, idx) => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'recommend-item';
                     itemDiv.onclick = function() { selectRecommendWord(rec.word); };
 
-                    itemDiv.innerHTML = '<div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;"><span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">' + rec.strategy + '</span><span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">' + rec.word + '</span><p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">' + rec.reason + '</p></div><div style="text-align: right; min-width: 85px;"><span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">평균 남은 단어</span><span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">' + rec.expected_remain + '개</span></div>';
+                    itemDiv.innerHTML = `
+                        <div class="rec-rank">${idx + 1}</div>
+                        <div class="rec-body">
+                            <div class="rec-header">
+                                <span class="rec-word">${rec.word}</span>
+                                <span class="rec-strategy">${rec.strategy}</span>
+                            </div>
+                            <div class="rec-reason">${rec.reason}</div>
+                        </div>
+                        <div class="rec-remain-box">
+                            <span class="rec-remain-label">평균 남은 단어</span>
+                            <span class="rec-remain-val">${rec.expected_remain}개</span>
+                        </div>
+                    `;
                     recContainer.appendChild(itemDiv);
                 });
             } else {
