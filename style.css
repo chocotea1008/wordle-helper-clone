@@ -287,6 +287,7 @@ header {
 .history-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
     padding: 0.6rem 0.75rem;
     background: #fafafa;
@@ -295,30 +296,28 @@ header {
     animation: fadeIn 0.25s ease;
 }
 
-.history-tiles { display: flex; gap: 3px; }
+.history-word {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
 
 .history-tile {
-    width: 32px;
-    height: 32px;
-    border-radius: 5px;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: #fff;
+    color: #ffffff;
 }
 
-.history-tile.h-grey { background: var(--color-grey); }
-.history-tile.h-yellow { background: var(--color-yellow); }
-.history-tile.h-green { background: var(--color-green); }
-
-.history-word {
-    flex: 1;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
+.history-tile.state-grey, .history-tile.h-grey { background: var(--color-grey); }
+.history-tile.state-yellow, .history-tile.h-yellow { background: var(--color-yellow); }
+.history-tile.state-green, .history-tile.h-green { background: var(--color-green); }
 
 .history-turn {
     font-size: 0.7rem;
