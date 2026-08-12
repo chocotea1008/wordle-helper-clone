@@ -344,28 +344,22 @@ header {
     gap: 0.85rem;
     padding: 0.85rem 1rem;
     background: #fafafa;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: all 0.15s ease;
     width: 100%;
 }
 
-.recommend-item:hover,
-.recommend-item.selected {
+.recommend-item:hover {
     border-color: #94a3b8;
     background: #f1f5f9;
 }
 
 .recommend-item.selected {
-    outline: 2px solid var(--text-primary);
-    outline-offset: -2px;
-}
-
-.recommend-item:first-child {
     border-color: var(--text-primary);
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .rec-rank {
@@ -379,11 +373,12 @@ header {
     justify-content: center;
     font-weight: 800;
     font-size: 0.75rem;
+    transition: all 0.15s ease;
 }
 
-.recommend-item:first-child .rec-rank {
+.recommend-item.selected .rec-rank {
     background: var(--text-primary);
-    color: #fff;
+    color: #ffffff;
 }
 
 .rec-body {
