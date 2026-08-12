@@ -34,6 +34,94 @@ const PRECALCULATED_STARTERS = {
     }
 };
 
+// --- LocalStorage Caching & History Persistence ---
+function getHistoryStorageKey(len = currentJamoLen) {
+    return `wordle_cheat_history_v2_${len}`;
+}
+
+function saveCheatState() {
+    try {
+        localStorage.setItem(getHistoryStorageKey(currentJamoLen), JSON.stringify(history));
+    } catch (e) {}
+}
+
+function loadCheatState(len = currentJamoLen) {
+    try {
+        const stored = localStorage.getItem(getHistoryStorageKey(len));
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {}
+    return [];
+}
+
+function getCalcCacheKey(historyArr, len = currentJamoLen) {
+    return `wordle_calc_cache_v2_${len}_` + JSON.stringify(historyArr);
+}
+
+function getCachedRecommendation(historyArr, len = currentJamoLen) {
+    try {
+        const key = getCalcCacheKey(historyArr, len);
+        const cachedStr = localStorage.getItem(key);
+        if (cachedStr) {
+            return JSON.parse(cachedStr);
+        }
+    } catch (e) {}
+    return null;
+}
+
+function setCachedRecommendation(historyArr, data, len = currentJamoLen) {
+    try {
+        const key = getCalcCacheKey(historyArr, len);
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {}
+}
+
+// --- Keyboard Recommendation Selection ---
+function updateSelectedRecommendUI() {
+    const items = document.querySelectorAll('#recommendations-container .recommend-item');
+    if (items.length === 0) return;
+
+    if (selectedRecommendIndex >= items.length) {
+        selectedRecommendIndex = items.length - 1;
+    }
+    if (selectedRecommendIndex < 0) {
+        selectedRecommendIndex = 0;
+    }
+
+    items.forEach((item, idx) => {
+        if (idx === selectedRecommendIndex) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function navigateRecommendSelection(dir) {
+    const items = document.querySelectorAll('#recommendations-container .recommend-item');
+    if (items.length === 0) return;
+
+    selectedRecommendIndex += dir;
+    if (selectedRecommendIndex < 0) selectedRecommendIndex = 0;
+    if (selectedRecommendIndex >= items.length) selectedRecommendIndex = items.length - 1;
+
+    updateSelectedRecommendUI();
+}
+
+function fillSelectedRecommendation() {
+    const items = document.querySelectorAll('#recommendations-container .recommend-item');
+    if (items.length === 0) return;
+
+    if (selectedRecommendIndex < 0 || selectedRecommendIndex >= items.length) {
+        selectedRecommendIndex = 0;
+    }
+
+    const targetItem = items[selectedRecommendIndex];
+    if (targetItem) {
+        targetItem.click();
+    }
+}
 
 // 1. 첫 턴 사전 계산 추천 단어 즉시 렌더링 (0ms 대기)
 function renderDefaultRecommendations(len) {
@@ -47,7 +135,11 @@ function renderDefaultRecommendations(len) {
     data.list.forEach((rec, idx) => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'recommend-item';
-        itemDiv.onclick = function() { selectRecommendWord(rec.word); };
+        itemDiv.onclick = function() {
+            selectedRecommendIndex = idx;
+            updateSelectedRecommendUI();
+            selectRecommendWord(rec.word);
+        };
 
         itemDiv.innerHTML = `
             <div class="rec-rank">${idx + 1}</div>
@@ -65,6 +157,9 @@ function renderDefaultRecommendations(len) {
         `;
         recContainer.appendChild(itemDiv);
     });
+
+    selectedRecommendIndex = 0;
+    updateSelectedRecommendUI();
 
     const candContainer = document.getElementById('candidates-container');
     if (candContainer) {
@@ -187,11 +282,11 @@ function toggleTileState(idx) {
     renderHintSelector();
 }
 
-// 6. [확인 및 추가] 버튼 활성화 여부
+// 6. [추가] 버튼 활성화 여부
 function updateAddButtonState() {
     const btnAdd = document.getElementById('btn-add');
     if (!btnAdd) return;
-    const allFilled = inputs.length === currentJamoLen && inputs.every(inp => inp.value.trim() !== '');
+    const allFilled = inputs.length === currentJamoLen && inputs.every(inp => inp && inp.value.trim() !== '');
     btnAdd.disabled = !allFilled;
 }
 
@@ -206,7 +301,7 @@ function selectRecommendWord(word) {
         }
     }
     updateAddButtonState();
-    showToast("'" + word + "' 단어가 자모(" + jamos.join('') + ")로 입력되었습니다!");
+    showToast("'" + word + "' 단어가 자모(" + jamos.join('') + ")로 입력되었습니다!", "info");
 }
 
 // 8. 현재 입력행 비우기
@@ -223,17 +318,22 @@ function switchMode(len) {
     document.getElementById('tab-6').classList.toggle('active', len === 6);
     document.getElementById('tab-7').classList.toggle('active', len === 7);
 
-    history = [];
+    history = loadCheatState(len);
     initInputFields();
     updateHistoryUI();
-    renderDefaultRecommendations(len);
+
+    if (history.length > 0) {
+        fetchRecommendation();
+    } else {
+        renderDefaultRecommendations(len);
+    }
 }
 
 // 10. 현재 추측 추가 및 추천 실행
 function addCurrentGuess() {
     const currentJamos = inputs.map(inp => inp.value.trim());
     if (currentJamos.length !== currentJamoLen || currentJamos.some(j => !j)) {
-        showToast("모든 자모 칸을 채워주세요.");
+        showToast("모든 자모 칸을 채워주세요.", "warning");
         return;
     }
 
@@ -245,6 +345,7 @@ function addCurrentGuess() {
         hint: hintValues
     });
 
+    saveCheatState();
     initInputFields();
     updateHistoryUI();
     fetchRecommendation();
@@ -253,15 +354,17 @@ function addCurrentGuess() {
 // 11. 전체 초기화
 function resetAll() {
     history = [];
+    saveCheatState();
     initInputFields();
     updateHistoryUI();
     renderDefaultRecommendations(currentJamoLen);
-    showToast("전체 기록이 초기화되었습니다.");
+    showToast("전체 기록이 초기화되었습니다.", "info");
 }
 
 // 12. 히스토리 항목 삭제
 function deleteHistoryItem(index) {
     history.splice(index, 1);
+    saveCheatState();
     updateHistoryUI();
     if (history.length === 0) {
         renderDefaultRecommendations(currentJamoLen);
@@ -314,12 +417,19 @@ function updateHistoryUI() {
 
 let currentSolveId = 0;
 
-// 14. 프론트엔드 실시간 연산 및 추천 단어 가져오기 (2턴 이후 실시간 비트마스킹)
+// 14. 프론트엔드 실시간 연산 및 추천 단어 가져오기 (캐시 우선 검사)
 async function fetchRecommendation() {
     const solveId = ++currentSolveId;
 
     if (history.length === 0) {
         renderDefaultRecommendations(currentJamoLen);
+        return;
+    }
+
+    // 캐시 우선 확인
+    const cachedData = getCachedRecommendation(history, currentJamoLen);
+    if (cachedData) {
+        renderRecommendationResult(cachedData);
         return;
     }
 
@@ -337,57 +447,85 @@ async function fetchRecommendation() {
         }
 
         if (data && data.success) {
-            document.getElementById('cand-count').innerText = data.remain_count.toLocaleString();
-
-            recContainer.innerHTML = '';
-
-            if (data.recommendations && data.recommendations.length > 0) {
-                data.recommendations.forEach((rec, idx) => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'recommend-item';
-                    itemDiv.onclick = function() { selectRecommendWord(rec.word); };
-
-                    itemDiv.innerHTML = `
-                        <div class="rec-rank">${idx + 1}</div>
-                        <div class="rec-body">
-                            <div class="rec-header">
-                                <span class="rec-word">${rec.word}</span>
-                                <span class="rec-strategy">${rec.strategy}</span>
-                            </div>
-                            <div class="rec-reason">${rec.reason}</div>
-                        </div>
-                        <div class="rec-remain-box">
-                            <span class="rec-remain-label">평균 남은 단어</span>
-                            <span class="rec-remain-val">${rec.expected_remain}개</span>
-                        </div>
-                    `;
-                    recContainer.appendChild(itemDiv);
-                });
-            } else {
-                recContainer.innerHTML = '<div class="placeholder-text" style="width: 100%;">조건에 일치하는 추천 단어가 없습니다. 입력된 힌트를 다시 확인해주세요.</div>';
-            }
-
-            const candContainer = document.getElementById('candidates-container');
-            if (candContainer) {
-                if (data.full_list && data.full_list.length > 0) {
-                    candContainer.innerHTML = '';
-                    data.full_list.forEach(word => {
-                        const badge = document.createElement('div');
-                        badge.className = 'candidate-badge';
-                        badge.innerText = word;
-                        badge.onclick = function() { selectRecommendWord(word); };
-                        badge.title = '클릭하여 입력창에 채우기';
-                        candContainer.appendChild(badge);
-                    });
-                } else {
-                    candContainer.innerHTML = '<div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다. (현재 남은 후보: ' + data.remain_count.toLocaleString() + '개)</div>';
-                }
-            }
+            setCachedRecommendation(history, data, currentJamoLen);
+            renderRecommendationResult(data);
         } else {
-            showToast('추천 연산 중 에러가 발생했습니다.');
+            showToast('추천 연산 중 에러가 발생했습니다.', 'error');
         }
     } catch (err) {
         console.error(err);
-        showToast('연산 처리 중 오류가 발생했습니다.');
+        showToast('연산 처리 중 오류가 발생했습니다.', 'error');
+    }
+}
+
+// 추천 결과 DOM 렌더링 헬퍼
+function renderRecommendationResult(data) {
+    document.getElementById('cand-count').innerText = data.remain_count.toLocaleString();
+
+    const recContainer = document.getElementById('recommendations-container');
+    if (!recContainer) return;
+
+    recContainer.innerHTML = '';
+
+    if (data.recommendations && data.recommendations.length > 0) {
+        data.recommendations.forEach((rec, idx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'recommend-item';
+            itemDiv.onclick = function() {
+                selectedRecommendIndex = idx;
+                updateSelectedRecommendUI();
+                selectRecommendWord(rec.word);
+            };
+
+            itemDiv.innerHTML = `
+                <div class="rec-rank">${idx + 1}</div>
+                <div class="rec-body">
+                    <div class="rec-header">
+                        <span class="rec-word">${rec.word}</span>
+                        <span class="rec-strategy">${rec.strategy}</span>
+                    </div>
+                    <div class="rec-reason">${rec.reason}</div>
+                </div>
+                <div class="rec-remain-box">
+                    <span class="rec-remain-label">평균 남은 단어</span>
+                    <span class="rec-remain-val">${rec.expected_remain}개</span>
+                </div>
+            `;
+            recContainer.appendChild(itemDiv);
+        });
+    } else {
+        recContainer.innerHTML = '<div class="placeholder-text" style="width: 100%;">조건에 일치하는 추천 단어가 없습니다. 입력된 힌트를 다시 확인해주세요.</div>';
+    }
+
+    selectedRecommendIndex = 0;
+    updateSelectedRecommendUI();
+
+    const candContainer = document.getElementById('candidates-container');
+    if (candContainer) {
+        if (data.full_list && data.full_list.length > 0) {
+            candContainer.innerHTML = '';
+            data.full_list.forEach(word => {
+                const badge = document.createElement('div');
+                badge.className = 'candidate-badge';
+                badge.innerText = word;
+                badge.onclick = function() { selectRecommendWord(word); };
+                badge.title = '클릭하여 입력창에 채우기';
+                candContainer.appendChild(badge);
+            });
+        } else {
+            candContainer.innerHTML = '<div class="placeholder-text" style="grid-column: 1 / -1; width: 100%;">후보 단어가 30개 이하가 되면 전체 목록이 여기에 표시됩니다. (현재 남은 후보: ' + data.remain_count.toLocaleString() + '개)</div>';
+        }
+    }
+}
+
+// 초기 앱 로드 및 복원
+function initCheatApp() {
+    history = loadCheatState(currentJamoLen);
+    initInputFields();
+    updateHistoryUI();
+    if (history.length > 0) {
+        fetchRecommendation();
+    } else {
+        renderDefaultRecommendations(currentJamoLen);
     }
 }

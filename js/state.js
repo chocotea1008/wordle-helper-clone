@@ -8,6 +8,7 @@ let currentJamoLen = 5;
 let tileStates = [];
 let inputs = [];
 let history = [];
+let selectedRecommendIndex = 0;
 
 let currentGameLen = 5;
 let gameAnswer = "";

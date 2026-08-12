@@ -351,9 +351,15 @@ header {
     width: 100%;
 }
 
-.recommend-item:hover {
+.recommend-item:hover,
+.recommend-item.selected {
     border-color: #94a3b8;
     background: #f1f5f9;
+}
+
+.recommend-item.selected {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
 }
 
 .recommend-item:first-child {
