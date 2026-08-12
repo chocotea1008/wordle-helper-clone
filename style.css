@@ -161,6 +161,7 @@ header {
     font-weight: 600;
     cursor: pointer;
     transition: opacity 0.15s ease;
+    white-space: nowrap;
 }
 
 .btn-primary {
@@ -192,12 +193,13 @@ header {
     font-size: 0.8rem;
     color: var(--text-muted);
     transition: color 0.15s;
+    white-space: nowrap;
 }
 
 .btn-delete:hover { color: #ef4444; }
 
-.button-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
-.button-group .btn { flex: 1; }
+.button-group { display: flex; gap: 0.5rem; margin-top: 1rem; width: 100%; max-width: 320px; justify-content: center; }
+.button-group .btn { flex: 1; text-align: center; }
 
 /* --- Input Tiles (Cheat Mode) --- */
 .input-container { display: flex; flex-direction: column; gap: 0.5rem; align-items: center; }
