@@ -106,9 +106,32 @@ function renderInputTiles() {
         input.addEventListener('input', (e) => {
             const val = e.target.value;
             if (val.length > 0) {
-                input.value = val.charAt(val.length - 1);
-                if (i < currentJamoLen - 1) {
-                    inputs[i + 1].focus();
+                const char = val.charAt(val.length - 1);
+                if (char === 'ㅐ') {
+                    input.value = 'ㅏ';
+                    if (i < currentJamoLen - 1) {
+                        inputs[i + 1].value = 'ㅣ';
+                        if (i < currentJamoLen - 2) {
+                            inputs[i + 2].focus();
+                        } else {
+                            inputs[i + 1].focus();
+                        }
+                    }
+                } else if (char === 'ㅔ') {
+                    input.value = 'ㅓ';
+                    if (i < currentJamoLen - 1) {
+                        inputs[i + 1].value = 'ㅣ';
+                        if (i < currentJamoLen - 2) {
+                            inputs[i + 2].focus();
+                        } else {
+                            inputs[i + 1].focus();
+                        }
+                    }
+                } else {
+                    input.value = char;
+                    if (i < currentJamoLen - 1) {
+                        inputs[i + 1].focus();
+                    }
                 }
             }
             updateAddButtonState();

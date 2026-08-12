@@ -46,12 +46,9 @@
                     <div class="hint-selector" id="hint-selector-container">
                         <!-- Dynamically generated -->
                     </div>
-                    <div style="text-align: center; margin-top: 0.25rem;">
-                        <span style="font-size: 0.7rem; color: var(--text-muted);">💡 숫자키 1~7로 색상 전환 가능</span>
-                    </div>
                     <div class="button-group">
                         <button class="btn btn-secondary" onclick="resetInputRow()">비우기</button>
-                        <button class="btn btn-primary" id="btn-add" onclick="addCurrentGuess()" disabled>확인 및 추가</button>
+                        <button class="btn btn-primary" id="btn-add" onclick="addCurrentGuess()" disabled>추가</button>
                     </div>
                 </div>
             </div>
@@ -176,8 +173,7 @@
                         <button class="vk-key" onclick="vkClick('ㅛ')">ㅛ</button>
                         <button class="vk-key" onclick="vkClick('ㅕ')">ㅕ</button>
                         <button class="vk-key" onclick="vkClick('ㅑ')">ㅑ</button>
-                        <button class="vk-key" onclick="vkClick('ㅐ')">ㅐ</button>
-                        <button class="vk-key" onclick="vkClick('ㅔ')">ㅔ</button>
+                        <button class="vk-key key-backspace" onclick="vkBackspace()">⌫</button>
                     </div>
                     <div class="vk-row" style="width: 100%;">
                         <button class="vk-key" onclick="vkClick('ㅁ')">ㅁ</button>
@@ -190,7 +186,7 @@
                         <button class="vk-key" onclick="vkClick('ㅏ')">ㅏ</button>
                         <button class="vk-key" onclick="vkClick('ㅣ')">ㅣ</button>
                     </div>
-                    <div class="vk-row" style="width: 100%;">
+                    <div class="vk-row" style="width: 77.8%;">
                         <button class="vk-key" onclick="vkClick('ㅋ')">ㅋ</button>
                         <button class="vk-key" onclick="vkClick('ㅌ')">ㅌ</button>
                         <button class="vk-key" onclick="vkClick('ㅊ')">ㅊ</button>
@@ -198,7 +194,6 @@
                         <button class="vk-key" onclick="vkClick('ㅠ')">ㅠ</button>
                         <button class="vk-key" onclick="vkClick('ㅜ')">ㅜ</button>
                         <button class="vk-key" onclick="vkClick('ㅡ')">ㅡ</button>
-                        <button class="vk-key key-backspace" onclick="vkBackspace()">⌫</button>
                     </div>
                 </div>
 

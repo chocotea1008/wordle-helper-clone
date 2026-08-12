@@ -46,6 +46,16 @@ function initGame(len = currentGameLen) {
 }
 
 function vkClick(jamo) {
+    if (jamo === 'ㅐ') {
+        vkClick('ㅏ');
+        vkClick('ㅣ');
+        return;
+    }
+    if (jamo === 'ㅔ') {
+        vkClick('ㅓ');
+        vkClick('ㅣ');
+        return;
+    }
     if (currentTypedJamos.length < currentGameLen) {
         currentTypedJamos.push(jamo);
         renderGameBoard();
