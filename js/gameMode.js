@@ -103,6 +103,7 @@ function submitGameGuess() {
         gameOver = true;
         msg.innerText = "🎉 정답입니다! (" + gameAnswer + ")";
         msg.style.color = "var(--color-green)";
+        setTimeout(() => { const rows = document.querySelectorAll('.game-row'); const lastRow = rows[gameHistory.length - 1]; if(lastRow) { lastRow.querySelectorAll('.game-tile').forEach((t,i) => { t.classList.add('bounce'); t.style.animationDelay = `${i*0.1}s`; }); } }, 500);
     } else if (gameHistory.length >= MAX_GUESSES) {
         gameOver = true;
         msg.innerText = "아쉽네요! 정답은: " + gameAnswer;
@@ -159,9 +160,12 @@ function renderGameBoard() {
                 if (guessPattern[j] === '초') tile.classList.add('state-green');
                 else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
                 else tile.classList.add('state-grey');
+                tile.classList.add('flip-in');
+                tile.style.animationDelay = `${j * 0.15}s`;
             } else if (i === gameHistory.length) {
                 tile.innerText = guessJamos[j] || '';
                 if (guessJamos[j]) {
+                    tile.classList.add('pop-in');
                     if (kbState[guessJamos[j]] === 'state-grey') {
                         tile.style.backgroundColor = "var(--color-grey)";
                         tile.style.color = "#fff";

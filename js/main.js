@@ -10,19 +10,33 @@ function switchMainTab(tab) {
     }
 }
 
-// 글로벌 키보드 입력 감지 (인풋 포커스 없이도 편리하게 타이핑 가능)
+// 글로벌 키보드 입력 감지
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.altKey || e.metaKey) return;
 
     const tag = document.activeElement ? document.activeElement.tagName.toUpperCase() : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-    if (e.key.length > 1 && e.key !== 'Backspace' && e.key !== 'Enter' && e.key !== 'Process') return;
-
     const cheatView = document.getElementById('cheat-view');
     const gameView = document.getElementById('game-view');
 
     if (cheatView && cheatView.style.display !== 'none') {
+        // 숫자키 1~7: 힌트 타일 색상 토글 (회→노→초→회)
+        if (e.key >= '1' && e.key <= '7') {
+            const idx = parseInt(e.key) - 1;
+            if (idx < currentJamoLen) {
+                e.preventDefault();
+                toggleTileState(idx);
+                // 시각 피드백: 펄스 애니메이션
+                const hintBtns = document.querySelectorAll('.hint-btn');
+                if (hintBtns[idx]) {
+                    hintBtns[idx].classList.add('pulse');
+                    setTimeout(() => hintBtns[idx].classList.remove('pulse'), 300);
+                }
+            }
+            return;
+        }
+
         if (e.key === 'Enter') {
             const btnAdd = document.getElementById('btn-add');
             if (btnAdd && !btnAdd.disabled) {
@@ -31,6 +45,8 @@ document.addEventListener('keydown', (e) => {
             }
             return;
         }
+
+        if (e.key.length > 1 && e.key !== 'Backspace' && e.key !== 'Process') return;
 
         if (e.key === 'Backspace') {
             let lastFilled = null;
@@ -58,6 +74,7 @@ document.addEventListener('keydown', (e) => {
             e.preventDefault();
             vkBackspace();
         } else {
+            if (e.key.length > 1 && e.key !== 'Process') return;
             const jamoMap = {
                 'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ', 'y': 'ㅛ', 'u': 'ㅕ', 'i': 'ㅑ', 'o': 'ㅐ', 'p': 'ㅔ',
                 'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ', 'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'l': 'ㅣ',

@@ -55,18 +55,26 @@ function decomposeKoreanWord(word) {
 
         // 추천 단어 클릭 시 인풋에 자모 자동 분해 입력
         
-function showToast(message) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.style.cssText = "position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; z-index: 9999; font-size: 0.9rem; transition: opacity 0.3s; opacity: 0;";
-        document.body.appendChild(toast);
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
     }
-    toast.innerText = message;
-    toast.style.opacity = '1';
-    
+    const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌' };
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {
-        toast.style.opacity = '0';
-    }, 2000);
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
 }

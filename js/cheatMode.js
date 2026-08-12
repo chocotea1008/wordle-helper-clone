@@ -44,12 +44,20 @@ function renderDefaultRecommendations(len) {
     if (!recContainer) return;
 
     recContainer.innerHTML = '';
-    data.list.forEach(rec => {
+    data.list.forEach((rec, idx) => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'recommend-item';
         itemDiv.onclick = function() { selectRecommendWord(rec.word); };
+        itemDiv.style.animationDelay = `${idx * 0.05}s`;
 
-        itemDiv.innerHTML = '<div style="display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; text-align: left;"><span style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">' + rec.strategy + '</span><span style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: 1px;">' + rec.word + '</span><p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3;">' + rec.reason + '</p></div><div style="text-align: right; min-width: 85px;"><span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1.2;">재귀적 정답 수렴</span><span style="font-size: 1rem; font-weight: 700; color: var(--color-green);">' + rec.remain + '</span></div>';
+        itemDiv.innerHTML = `
+            <div class="rec-rank">${idx + 1}</div>
+            <div class="rec-body">
+                <div><span class="rec-word">${rec.word}</span><span class="rec-strategy">${rec.strategy}</span></div>
+                <div class="rec-reason">${rec.reason}</div>
+            </div>
+            <div class="rec-remain">${rec.remain}</div>
+        `;
         recContainer.appendChild(itemDiv);
     });
 
@@ -62,9 +70,23 @@ function renderDefaultRecommendations(len) {
 // 2. 입력 필드 및 힌트 선택기 초기화
 function initInputFields() {
     tileStates = new Array(currentJamoLen).fill('grey');
+    renderNumberLabels();
     renderInputTiles();
     renderHintSelector();
     updateAddButtonState();
+}
+
+// 2-1. 숫자 레이블 렌더링 (힌트 타일 위 1~7 표시)
+function renderNumberLabels() {
+    const container = document.getElementById('hint-number-label');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < currentJamoLen; i++) {
+        const label = document.createElement('span');
+        label.className = 'hint-number';
+        label.innerText = (i + 1);
+        container.appendChild(label);
+    }
 }
 
 // 3. 자모 입력 타일 렌더링
@@ -118,9 +140,9 @@ function renderHintSelector() {
         const stateObj = stateMap[stateKey] || stateMap['grey'];
 
         const btn = document.createElement('div');
-        btn.className = 'tile-hint ' + stateObj.class;
+        btn.className = 'hint-btn ' + stateObj.class;
         btn.innerText = stateObj.text;
-        btn.title = '클릭하여 힌트 상태 변경 (회색 -> 노랑 -> 초록)';
+        btn.title = `${i+1}번 키 또는 클릭으로 상태 변경`;
         btn.onclick = (function(index) {
             return function() { toggleTileState(index); };
         })(i);
