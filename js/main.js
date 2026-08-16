@@ -5,8 +5,15 @@ function switchMainTab(tab) {
     document.getElementById('cheat-view').style.display = tab === 'cheat' ? 'grid' : 'none';
     document.getElementById('game-view').style.display = tab === 'game' ? 'grid' : 'none';
 
-    if (tab === 'game' && !gameAnswer) {
-        initGame(5);
+    if (tab === 'game') {
+        if (!gameAnswer) {
+            initGame(5);
+        } else {
+            // 탭 전환 시 과거 행의 애니메이션이 재실행되지 않도록 정적 렌더링
+            lastSubmittedRow = -1;
+            lastTypedIndex = -1;
+            renderGameBoard();
+        }
     }
 }
 

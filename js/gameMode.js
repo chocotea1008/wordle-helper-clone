@@ -251,6 +251,14 @@ function submitGameGuess() {
 
     const animDuration = isGameAnimEnabled ? ((currentGameLen * 200) + 400) : 0;
 
+    // 회전 애니메이션 완료 후 상태를 정적 클래스로 전환 (탭 전환 시 재실행 방지)
+    if (isGameAnimEnabled) {
+        setTimeout(() => {
+            lastSubmittedRow = -1;
+            renderGameBoard();
+        }, (currentGameLen * 200) + 600);
+    }
+
     if (isWin) {
         gameOver = true;
         setTimeout(() => {

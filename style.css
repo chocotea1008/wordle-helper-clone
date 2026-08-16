@@ -333,7 +333,6 @@ header {
     background: #fafafa;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    animation: fadeIn 0.25s ease;
 }
 
 .history-word {
