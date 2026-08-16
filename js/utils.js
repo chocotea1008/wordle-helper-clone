@@ -61,9 +61,9 @@ function showToast(message, type = 'info') {
         container = document.createElement('div');
         container.id = 'toast-container';
         container.style.cssText = `
-            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
-            pointer-events: none;
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;
+            pointer-events: none; max-width: 90vw;
         `;
         document.body.appendChild(container);
     }
