@@ -1,6 +1,5 @@
-// --- 직접 플레이 (Wordle Game) 모드 컨트롤러 ---
-
 let lastSubmittedRow = -1;
+let lastTypedIndex = -1;
 let keyboardColorMap = {};
 
 // --- 애니메이션 ON/OFF 쿠키 및 LocalStorage 영구 저장 ---
@@ -71,6 +70,7 @@ function initGame(len = currentGameLen) {
     currentTypedJamos = [];
     gameOver = false;
     lastSubmittedRow = -1;
+    lastTypedIndex = -1;
     keyboardColorMap = {};
 
     updateAnimToggleButtonUI();
@@ -128,6 +128,7 @@ function vkClick(jamo) {
         return;
     }
     if (currentTypedJamos.length < currentGameLen) {
+        lastTypedIndex = currentTypedJamos.length;
         currentTypedJamos.push(jamo);
         renderGameBoard();
     }
@@ -136,6 +137,7 @@ function vkClick(jamo) {
 function vkBackspace() {
     if (gameOver) return;
     lastSubmittedRow = -1;
+    lastTypedIndex = -1;
 
     if (currentTypedJamos.length > 0) {
         currentTypedJamos.pop();
@@ -325,7 +327,8 @@ function renderGameBoard() {
                 tile.innerText = char;
                 if (char) {
                     tile.classList.add('active-input');
-                    if (isGameAnimEnabled) {
+                    // 오직 방금 추가된 바로 그 타일 1개만 pop 애니메이션 실행!
+                    if (isGameAnimEnabled && j === lastTypedIndex) {
                         tile.classList.add('tile-pop');
                     }
                     // 이미 회색(불일치)으로 판정된 자모인 경우 키보드처럼 회백색 음영으로 미리 표시
