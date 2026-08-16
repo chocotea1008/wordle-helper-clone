@@ -661,7 +661,7 @@ header {
 #custom-answer-input:focus { border-color: var(--text-primary); }
 #custom-answer-input::placeholder { color: var(--text-muted); }
 
-/* --- Wordle Tile Animations (회전 중 90도에서 색상 공개) --- */
+/* --- Wordle Tile Animations (정통 2-Phase 3D Flip) --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -672,88 +672,24 @@ header {
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* 90도 회전 시점에 초록색 공개 */
-@keyframes flipGreen {
-    0% {
-        transform: rotateX(0deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    45% {
-        transform: rotateX(90deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    55% {
-        transform: rotateX(90deg);
-        background-color: var(--color-green) !important;
-        border-color: var(--color-green) !important;
-        color: #ffffff !important;
-    }
-    100% {
-        transform: rotateX(0deg);
-        background-color: var(--color-green) !important;
-        border-color: var(--color-green) !important;
-        color: #ffffff !important;
-    }
+/* 1단계: 0도 -> 90도 회전 (흰색 상태로 닫힘) */
+@keyframes flipIn {
+    0% { transform: rotateX(0deg); }
+    100% { transform: rotateX(90deg); }
 }
 
-/* 90도 회전 시점에 노란색 공개 */
-@keyframes flipYellow {
-    0% {
-        transform: rotateX(0deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    45% {
-        transform: rotateX(90deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    55% {
-        transform: rotateX(90deg);
-        background-color: var(--color-yellow) !important;
-        border-color: var(--color-yellow) !important;
-        color: #ffffff !important;
-    }
-    100% {
-        transform: rotateX(0deg);
-        background-color: var(--color-yellow) !important;
-        border-color: var(--color-yellow) !important;
-        color: #ffffff !important;
-    }
+/* 2단계: 90도 -> 0도 복귀 (색상 입혀진 상태로 열림) */
+@keyframes flipOut {
+    0% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
 }
 
-/* 90도 회전 시점에 회색 공개 */
-@keyframes flipGrey {
-    0% {
-        transform: rotateX(0deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    45% {
-        transform: rotateX(90deg);
-        background-color: #ffffff !important;
-        border-color: #cbd5e1 !important;
-        color: var(--text-primary) !important;
-    }
-    55% {
-        transform: rotateX(90deg);
-        background-color: #64748b !important;
-        border-color: #64748b !important;
-        color: #ffffff !important;
-    }
-    100% {
-        transform: rotateX(0deg);
-        background-color: #64748b !important;
-        border-color: #64748b !important;
-        color: #ffffff !important;
-    }
+.flip-in {
+    animation: flipIn 0.2s ease-in forwards;
+}
+
+.flip-out {
+    animation: flipOut 0.2s ease-out forwards;
 }
 
 @keyframes rowShake {
@@ -769,9 +705,6 @@ header {
 }
 
 .tile-pop { animation: tilePopIn 0.12s ease-out forwards; }
-.tile-flip-green { animation: flipGreen 0.5s ease both; }
-.tile-flip-yellow { animation: flipYellow 0.5s ease both; }
-.tile-flip-grey { animation: flipGrey 0.5s ease both; }
 .row-shake { animation: rowShake 0.45s ease-in-out; }
 .win-bounce { animation: winBounce 0.55s ease forwards !important; }
 .pulse { animation: pulse 0.3s ease !important; }

@@ -225,54 +225,92 @@ function submitGameGuess() {
     const patternStr = getPattern(jamos, gameAnswerJamos);
     const pattern = patternStr.split('');
 
-    lastSubmittedRow = isGameAnimEnabled ? gameHistory.length : -1;
+    const submittedRowIdx = gameHistory.length;
     gameHistory.push({ word: '', jamos, pattern });
     currentTypedJamos = [];
+    lastTypedIndex = -1;
 
-    if (isGameAnimEnabled) {
-        renderGameBoard();
-        // 타일이 90도 회전하여 색상이 공개되는 순간 가상 키보드 색상도 일치하여 변경
-        pattern.forEach((pat, j) => {
-            setTimeout(() => {
-                updateKeyboardSingleKey(jamos[j], pat);
-            }, (j * 200) + 250);
-        });
-    } else {
+    const isWin = patternStr === '초'.repeat(currentGameLen);
+    const isLoss = !isWin && gameHistory.length >= MAX_GUESSES;
+
+    if (!isGameAnimEnabled) {
         // 애니메이션 OFF 시 즉시 키보드 색상 및 타일 반영
         pattern.forEach((pat, j) => {
             updateKeyboardSingleKey(jamos[j], pat);
         });
         renderGameBoard();
+
+        const msg = document.getElementById('game-message');
+        if (isWin) {
+            gameOver = true;
+            if (msg) {
+                msg.innerText = `🎉 정답입니다! (${gameAnswer})`;
+                msg.style.color = "var(--color-green)";
+            }
+            if (typeof showToast === 'function') {
+                showToast(`🎉 정답입니다! (${gameAnswer})`, "success");
+            }
+        } else if (isLoss) {
+            gameOver = true;
+            if (msg) {
+                msg.innerText = `아쉽네요! 정답은: ${gameAnswer}`;
+                msg.style.color = "var(--color-yellow)";
+            }
+            if (typeof showToast === 'function') {
+                showToast(`정답은 '${gameAnswer}' 였습니다.`, "info");
+            }
+        }
+        return;
     }
 
-    const msg = document.getElementById('game-message');
-    const isWin = patternStr === '초'.repeat(currentGameLen);
-    const isLoss = !isWin && gameHistory.length >= MAX_GUESSES;
+    // 애니메이션 ON: 방금 제출된 줄은 색상 없이 흰색 타일로 먼저 렌더링
+    renderGameBoard(submittedRowIdx);
 
-    const animDuration = isGameAnimEnabled ? ((currentGameLen * 200) + 400) : 0;
+    const rows = document.querySelectorAll('.game-row');
+    const targetRow = rows[submittedRowIdx];
+    if (!targetRow) return;
 
-    // 회전 애니메이션 완료 후 상태를 정적 클래스로 전환 (게임 진행 중인 경우)
-    if (isGameAnimEnabled && !isWin) {
+    const tiles = targetRow.querySelectorAll('.game-tile');
+    const FLIP_HALF = 200; // 0도 -> 90도 (ms)
+    const STEP_DELAY = 180; // 타일 간 시작 간격 (ms)
+
+    pattern.forEach((pat, j) => {
+        const tile = tiles[j];
+        if (!tile) return;
+
+        const startTime = j * STEP_DELAY;
+        const revealTime = startTime + FLIP_HALF;
+
+        // 1단계: 0도 -> 90도 회전 (흰색 상태로 닫힘)
         setTimeout(() => {
-            lastSubmittedRow = -1;
-            renderGameBoard();
-        }, (currentGameLen * 200) + 600);
-    }
+            tile.classList.add('flip-in');
+        }, startTime);
 
-    if (isWin) {
-        gameOver = true;
+        // 2단계: 90도 정점(정확히 칼날처럼 납작해진 순간)에서 색상 클래스 주입 & flip-out 회전
         setTimeout(() => {
-            if (isGameAnimEnabled) {
-                const rows = document.querySelectorAll('.game-row');
-                const winningRow = rows[gameHistory.length - 1];
-                if (winningRow) {
-                    winningRow.querySelectorAll('.game-tile').forEach((t, i) => {
-                        t.classList.remove('tile-flip-green');
-                        void t.offsetWidth;
-                        t.classList.add('win-bounce');
-                        t.style.animationDelay = `${i * 0.08}s`;
-                    });
-                }
+            tile.classList.remove('flip-in');
+            if (pat === '초') tile.classList.add('state-green');
+            else if (pat === '노') tile.classList.add('state-yellow');
+            else tile.classList.add('state-grey');
+
+            updateKeyboardSingleKey(jamos[j], pat);
+            tile.classList.add('flip-out');
+        }, revealTime);
+    });
+
+    const totalAnimDuration = (currentGameLen * STEP_DELAY) + FLIP_HALF + 250;
+
+    setTimeout(() => {
+        const msg = document.getElementById('game-message');
+        if (isWin) {
+            gameOver = true;
+            if (targetRow) {
+                tiles.forEach((t, i) => {
+                    t.classList.remove('flip-out');
+                    void t.offsetWidth;
+                    t.classList.add('win-bounce');
+                    t.style.animationDelay = `${i * 0.08}s`;
+                });
             }
             if (msg) {
                 msg.innerText = `🎉 정답입니다! (${gameAnswer})`;
@@ -281,10 +319,8 @@ function submitGameGuess() {
             if (typeof showToast === 'function') {
                 showToast(`🎉 정답입니다! (${gameAnswer})`, "success");
             }
-        }, animDuration);
-    } else if (isLoss) {
-        gameOver = true;
-        setTimeout(() => {
+        } else if (isLoss) {
+            gameOver = true;
             if (msg) {
                 msg.innerText = `아쉽네요! 정답은: ${gameAnswer}`;
                 msg.style.color = "var(--color-yellow)";
@@ -292,11 +328,11 @@ function submitGameGuess() {
             if (typeof showToast === 'function') {
                 showToast(`정답은 '${gameAnswer}' 였습니다.`, "info");
             }
-        }, animDuration);
-    }
+        }
+    }, totalAnimDuration);
 }
 
-function renderGameBoard() {
+function renderGameBoard(unrevealedRowIdx = -1) {
     syncAllKeyboardKeys();
     const board = document.getElementById('game-board');
     if (!board) return;
@@ -318,18 +354,14 @@ function renderGameBoard() {
                 tile.innerText = guessJamos[j] || '';
                 tile.classList.add('filled');
 
-                // 항상 기본 정답 상태 클래스(초록/노랑/회색)를 유지하여 바운스 후에도 흰색으로 초기화되지 않음
-                if (guessPattern[j] === '초') tile.classList.add('state-green');
-                else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
-                else tile.classList.add('state-grey');
-
-                if (i === lastSubmittedRow && isGameAnimEnabled) {
-                    // 방금 제출한 행 (애니메이션 ON): 90도 회전 시점에 색상 공개 효과 실행
-                    if (guessPattern[j] === '초') tile.classList.add('tile-flip-green');
-                    else if (guessPattern[j] === '노') tile.classList.add('tile-flip-yellow');
-                    else tile.classList.add('tile-flip-grey');
-
-                    tile.style.animationDelay = `${j * 0.2}s`;
+                if (i === unrevealedRowIdx) {
+                    // 애니메이션 중인 행: 순수 흰색 유지 (색상 클래스 없음)
+                    tile.classList.add('active-input');
+                } else {
+                    // 이미 완료된 행: 확정 색상 유지
+                    if (guessPattern[j] === '초') tile.classList.add('state-green');
+                    else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
+                    else tile.classList.add('state-grey');
                 }
             } else if (i === gameHistory.length) {
                 // 현재 타이핑 입력 중인 행
