@@ -564,33 +564,104 @@ header {
     color: #ffffff;
 }
 
-/* --- Virtual Keyboard --- */
-.vk-row { display: flex; gap: 4px; justify-content: center; width: 100%; }
+/* --- Virtual Keyboard (실물 키보드 키캡 타건감 디자인) --- */
+.vk-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+}
 
 .vk-key {
-    min-width: 28px;
-    height: 44px;
-    border: none;
-    border-radius: 6px;
-    background: #e2e8f0;
+    min-width: 32px;
+    height: 56px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f1f5f9;
     color: var(--text-primary);
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     cursor: pointer;
     flex: 1;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background 0.1s ease, transform 0.08s ease, box-shadow 0.08s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 0 #cbd5e1;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.vk-key:hover { background: #cbd5e1; }
-.vk-key:active { background: #94a3b8; color: #fff; }
-.vk-key.state-green, .vk-key.key-green { background: var(--color-green) !important; color: #fff !important; }
-.vk-key.state-yellow, .vk-key.key-yellow { background: var(--color-yellow) !important; color: #fff !important; }
-.vk-key.state-grey, .vk-key.key-grey { background: #94a3b8 !important; color: #fff !important; opacity: 0.55; }
-.vk-key.key-backspace { background: #fecaca; color: #dc2626; }
-.vk-key.key-backspace:hover { background: #fca5a5; }
+.vk-key:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
+.vk-key:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #cbd5e1;
+}
+
+.vk-key.state-green, .vk-key.key-green {
+    background: var(--color-green) !important;
+    border-color: var(--color-green) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 0 #0f766e !important;
+}
+.vk-key.state-green:active, .vk-key.key-green:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #0f766e !important;
+}
+
+.vk-key.state-yellow, .vk-key.key-yellow {
+    background: var(--color-yellow) !important;
+    border-color: var(--color-yellow) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 0 #b45309 !important;
+}
+.vk-key.state-yellow:active, .vk-key.key-yellow:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #b45309 !important;
+}
+
+.vk-key.state-grey, .vk-key.key-grey {
+    background: #94a3b8 !important;
+    border-color: #94a3b8 !important;
+    color: #ffffff !important;
+    opacity: 0.6;
+    box-shadow: 0 4px 0 #64748b !important;
+}
+.vk-key.state-grey:active, .vk-key.key-grey:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #64748b !important;
+}
+
+.vk-key.key-backspace {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
+    font-size: 1.35rem;
+    box-shadow: 0 4px 0 #fca5a5;
+}
+.vk-key.key-backspace:hover {
+    background: #fecaca;
+}
+.vk-key.key-backspace:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #fca5a5;
+}
+
+@media (max-width: 480px) {
+    .vk-key {
+        height: 50px;
+        font-size: 1.15rem;
+        border-radius: 6px;
+        box-shadow: 0 3px 0 #cbd5e1;
+    }
+    .vk-row {
+        gap: 4px;
+    }
+}
 
 /* --- Guide Box --- */
 .guide-box {
