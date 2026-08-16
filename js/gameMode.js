@@ -32,6 +32,79 @@ function setGameAnimSetting(enabled) {
 
 let isGameAnimEnabled = getGameAnimSetting();
 
+// --- 없는 단어 사용 가능 ON/OFF 쿠키 및 LocalStorage 영구 저장 (기본값: OFF) ---
+function getAllowInvalidWordsSetting() {
+    try {
+        const cookieVal = getCookie('wordle_allow_invalid_words');
+        if (cookieVal !== null) return cookieVal === 'true';
+        const localVal = localStorage.getItem('wordle_allow_invalid_words');
+        if (localVal !== null) return localVal === 'true';
+    } catch(e) {}
+    return false; // 기본값: OFF
+}
+
+function setAllowInvalidWordsSetting(enabled) {
+    try {
+        setCookie('wordle_allow_invalid_words', enabled ? 'true' : 'false', 365);
+        localStorage.setItem('wordle_allow_invalid_words', enabled ? 'true' : 'false');
+    } catch(e) {}
+}
+
+let isAllowInvalidWordsEnabled = getAllowInvalidWordsSetting();
+
+function updateAllowInvalidWordsButtonUI() {
+    const btn = document.getElementById('btn-toggle-invalid-words');
+    if (!btn) return;
+    if (isAllowInvalidWordsEnabled) {
+        btn.innerHTML = '없는 단어 허용 ON 🔓';
+        btn.style.color = 'var(--color-green)';
+        btn.style.borderColor = 'var(--color-green)';
+    } else {
+        btn.innerHTML = '없는 단어 허용 OFF 🔒';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderColor = 'var(--border-color)';
+    }
+}
+
+function toggleAllowInvalidWords() {
+    isAllowInvalidWordsEnabled = !isAllowInvalidWordsEnabled;
+    setAllowInvalidWordsSetting(isAllowInvalidWordsEnabled);
+    updateAllowInvalidWordsButtonUI();
+    if (typeof showToast === 'function') {
+        showToast(isAllowInvalidWordsEnabled ? "사전에 없는 단어 입력이 허용됩니다 (ON 🔓)" : "사전에 등록된 단어만 입력 가능합니다 (OFF 🔒)");
+    }
+}
+
+// 사전 유효 단어 O(1) 검증 집합 캐시
+let validJamoWordSet = null;
+
+function getValidJamoWordSet() {
+    if (validJamoWordSet) return validJamoWordSet;
+    validJamoWordSet = new Set();
+
+    if (typeof ALL_WORDS !== 'undefined' && Array.isArray(ALL_WORDS)) {
+        for (let i = 0; i < ALL_WORDS.length; i++) {
+            const jamos = decomposeKoreanWord(ALL_WORDS[i]).join('');
+            validJamoWordSet.add(jamos);
+        }
+    }
+
+    if (typeof COMMON_ANSWER_WORDS !== 'undefined') {
+        for (let len in COMMON_ANSWER_WORDS) {
+            COMMON_ANSWER_WORDS[len].forEach(w => {
+                validJamoWordSet.add(decomposeKoreanWord(w).join(''));
+            });
+        }
+    }
+    return validJamoWordSet;
+}
+
+function isValidWordJamos(jamos) {
+    const jamoStr = jamos.join('');
+    const set = getValidJamoWordSet();
+    return set.has(jamoStr);
+}
+
 function updateAnimToggleButtonUI() {
     const btn = document.getElementById('btn-toggle-anim');
     if (!btn) return;
@@ -74,6 +147,7 @@ function initGame(len = currentGameLen) {
     keyboardColorMap = {};
 
     updateAnimToggleButtonUI();
+    updateAllowInvalidWordsButtonUI();
 
     const msg = document.getElementById('game-message');
     if (msg) {
@@ -217,6 +291,28 @@ function submitGameGuess() {
         }
         if (typeof showToast === 'function') {
             showToast("자모를 모두 입력해주세요.", "warning");
+        }
+        return;
+    }
+
+    // 만약 '없는 단어 허용'이 OFF인 경우 사전에 등록된 단어인지 검증
+    if (!isAllowInvalidWordsEnabled && !isValidWordJamos(currentTypedJamos)) {
+        const rows = document.querySelectorAll('.game-row');
+        const currentRow = rows[gameHistory.length];
+        if (currentRow) {
+            currentRow.classList.remove('row-shake');
+            void currentRow.offsetWidth;
+            currentRow.classList.add('row-shake');
+        }
+
+        const msg = document.getElementById('game-message');
+        if (msg) {
+            msg.innerText = "사전에 등록되지 않은 단어입니다.";
+            msg.style.color = "var(--color-yellow)";
+            setTimeout(() => { if (!gameOver) msg.innerText = ""; }, 2000);
+        }
+        if (typeof showToast === 'function') {
+            showToast("사전에 등록되지 않은 단어입니다.", "warning");
         }
         return;
     }
