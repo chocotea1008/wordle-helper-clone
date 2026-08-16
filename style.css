@@ -678,12 +678,13 @@ header {
     #section-history { order: 4; }
     #section-guide { order: 5; }
 
-    /* 모바일 전용: 추천 단어 가로 직렬 배치 (그리드로 꽉 차게) */
+    /* 모바일 전용: 추천 단어 가로 2열 그리드로 꽉 차게 */
     #recommendations-container {
         display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
-        gap: 6px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
         width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .recommend-item {
@@ -691,10 +692,11 @@ header {
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
-        padding: 0.6rem 0.75rem !important;
+        padding: 0.65rem 0.85rem !important;
         width: 100% !important;
         min-width: 0 !important;
         gap: 4px !important;
+        box-sizing: border-box !important;
         border-radius: var(--radius-sm) !important;
     }
 
