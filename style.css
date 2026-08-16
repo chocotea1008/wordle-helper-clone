@@ -535,6 +535,14 @@ header {
     color: var(--text-primary);
 }
 
+/* 이미 제외(회색) 판정된 자모를 타이핑할 때 가상 키보드처럼 회백색/음영 미리 표시 */
+.game-tile.typing-grey {
+    background-color: #94a3b8 !important;
+    border-color: #94a3b8 !important;
+    color: #ffffff !important;
+    opacity: 0.65;
+}
+
 /* 정적 상태 (이미 제출되어 공개된 과거 행) */
 .game-tile.state-green,
 .game-tile.game-green {

@@ -261,6 +261,10 @@ function renderGameBoard() {
                 tile.innerText = char;
                 if (char) {
                     tile.classList.add('active-input', 'tile-pop');
+                    // 이미 회색(불일치)으로 판정된 자모인 경우 키보드처럼 회백색 음영으로 미리 표시
+                    if (keyboardColorMap[char] === 'state-grey') {
+                        tile.classList.add('typing-grey');
+                    }
                 }
             }
             row.appendChild(tile);
