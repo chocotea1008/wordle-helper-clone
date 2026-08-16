@@ -5,31 +5,31 @@ const PRECALCULATED_STARTERS = {
     5: {
         total: "24,205",
         list: [
-            { word: "가위", strategy: "종합 1위 (96.1점)", reason: "5종 지표 종합 압도적 1위! ㄱ,ㅏ,ㅇ,ㅜ,ㅣ", remain: "1.2개" },
-            { word: "가외", strategy: "종합 2위 (95.1점)", reason: "이중모음(ㅚ→ㅗ+ㅣ) 구조 빠른 구분", remain: "1.2개" },
-            { word: "아귀", strategy: "종합 3위 (92.8점)", reason: "ㅇ,ㅏ,ㄱ,ㅜ,ㅣ 5자모 108개 패턴 분할", remain: "1.2개" },
-            { word: "기낭", strategy: "일상단어 추천 (84.1점)", reason: "ㄱ,ㅣ,ㄴ,ㅏ,ㅇ 자음 ㄴ 커버", remain: "1.2개" },
-            { word: "인사", strategy: "친숙 단어 추천", reason: "친숙한 일상 단어로 쉬운 시작", remain: "1.2개" }
+            { word: "가위", strategy: "종합 1위 (96.1점)", reason: "5종 지표 종합 압도적 1위! ㄱ,ㅏ,ㅇ,ㅜ,ㅣ — 한국어 최빈출 자모 5개를 정확히 커버합니다.", remain: "2턴 후 1.2개" },
+            { word: "가외", strategy: "종합 2위 (95.1점)", reason: "이중모음(ㅚ→ㅗ+ㅣ) 구조를 빠르게 구분하여 1턴 후 평균 7.2개로 축소합니다.", remain: "2턴 후 1.2개" },
+            { word: "아귀", strategy: "종합 3위 (92.8점)", reason: "ㅇ,ㅏ,ㄱ,ㅜ,ㅣ 5자모로 108개 패턴 분할! 2턴 후 평균 1.17개로 수렴합니다.", remain: "2턴 후 1.2개" },
+            { word: "기낭", strategy: "일상단어 추천 (84.1점)", reason: "ㄱ,ㅣ,ㄴ,ㅏ,ㅇ — 자음 ㄴ까지 커버하여 폭넓은 정보를 획득합니다.", remain: "2턴 후 1.2개" },
+            { word: "인사", strategy: "친숙 단어 추천", reason: "누구나 아는 일상 단어로 부담 없이 시작하면서도 효율적인 자모 탐색이 가능합니다.", remain: "2턴 후 1.2개" }
         ]
     },
     6: {
         total: "45,163",
         list: [
-            { word: "안식", strategy: "종합 1위 (94.5점)", reason: "6자모 핵심 자모 포함", remain: "1.0개" },
-            { word: "악신", strategy: "종합 2위 (93.5점)", reason: "안정적인 분할", remain: "1.0개" },
-            { word: "과일", strategy: "일상단어 추천", reason: "이중모음(ㅘ)과 받침(ㄹ) 탐색", remain: "1.0개" },
-            { word: "신발", strategy: "친숙 단어 추천", reason: "자음(ㅅ,ㄴ,ㅂ,ㄹ) 고루 탐색", remain: "1.0개" },
-            { word: "식당", strategy: "친숙 단어 추천", reason: "친숙한 일상 단어", remain: "1.0개" }
+            { word: "안식", strategy: "종합 1위 (94.5점)", reason: "6자모 절대 왕! ㅇ,ㅏ,ㄴ,ㅅ,ㅣ,ㄱ — 한국어 6대 핵심 자모를 모두 포함합니다.", remain: "2턴 후 1.0개" },
+            { word: "악신", strategy: "종합 2위 (93.5점)", reason: "1턴 후 평균 3.59개 → 최악의 경우에도 9개만 남는 안정적인 단어입니다.", remain: "2턴 후 1.0개" },
+            { word: "과일", strategy: "일상단어 추천", reason: "이중모음(ㅘ)과 받침(ㄹ) 탐색으로 2턴 재귀 시 1.01개로 완벽 수렴합니다.", remain: "2턴 후 1.0개" },
+            { word: "신발", strategy: "친숙 단어 추천", reason: "자음(ㅅ,ㄴ,ㅂ,ㄹ)을 고루 탐색하여 2턴 만에 정답을 확정짓습니다.", remain: "2턴 후 1.0개" },
+            { word: "식당", strategy: "친숙 단어 추천", reason: "1턴 후 평균 4.9개 → 일상에서 친숙한 단어로 부담 없이 시작 가능합니다.", remain: "2턴 후 1.0개" }
         ]
     },
     7: {
         total: "33,004",
         list: [
-            { word: "옷가지", strategy: "종합 1위 (96.4점)", reason: "7자모 절대 1위", remain: "1.0개" },
-            { word: "옷가리", strategy: "종합 2위 (96.1점)", reason: "초안정 단어", remain: "1.0개" },
-            { word: "안소리", strategy: "종합 3위 (93.1점)", reason: "253개 패턴 분할", remain: "1.0개" },
-            { word: "강아지", strategy: "친숙 단어 추천", reason: "친숙한 7자모 단어", remain: "1.0개" },
-            { word: "독수리", strategy: "일상 대표 단어", reason: "친숙한 3글자 7자모 단어", remain: "1.0개" }
+            { word: "옷가지", strategy: "종합 1위 (96.4점)", reason: "7자모 절대 왕! 1턴 후 평균 2.1개 → 2턴 후 1.0개 = 100% 정답 확정!", remain: "2턴 후 1.0개" },
+            { word: "옷가리", strategy: "종합 2위 (96.1점)", reason: "ㅇ,ㅗ,ㅅ,ㄱ,ㅏ,ㄹ,ㅣ — 최악의 경우에도 7개만 남는 초안정 단어입니다.", remain: "2턴 후 1.0개" },
+            { word: "안소리", strategy: "종합 3위 (93.1점)", reason: "ㅇ,ㅏ,ㄴ,ㅅ,ㅗ,ㄹ,ㅣ — 253개 패턴 분할로 폭넓은 정보를 획득합니다.", remain: "2턴 후 1.0개" },
+            { word: "강아지", strategy: "친숙 단어 추천", reason: "누구나 아는 단어! ㄱ,ㅏ,ㅇ,ㅇ,ㅏ,ㅈ,ㅣ 7자모로 2턴 후 확정합니다.", remain: "2턴 후 1.0개" },
+            { word: "독수리", strategy: "일상 대표 단어", reason: "1턴 후 평균 2.9개 → 친숙한 3글자 7자모 단어로 효율적 시작이 가능합니다.", remain: "2턴 후 1.0개" }
         ]
     }
 };
@@ -122,8 +122,18 @@ function renderDefaultRecommendations(len) {
         };
 
         itemDiv.innerHTML = `
-            <span class="rec-word">${rec.word}</span>
-            <span class="rec-remain-val">${rec.remain}</span>
+            <div class="rec-rank">${idx + 1}</div>
+            <div class="rec-body">
+                <div class="rec-header">
+                    <span class="rec-word">${rec.word}</span>
+                    <span class="rec-strategy">${rec.strategy}</span>
+                </div>
+                <div class="rec-reason">${rec.reason}</div>
+            </div>
+            <div class="rec-remain-box">
+                <span class="rec-remain-label">재귀적 정답 수렴</span>
+                <span class="rec-remain-val">${rec.remain}</span>
+            </div>
         `;
         recContainer.appendChild(itemDiv);
     });
@@ -440,8 +450,18 @@ function renderRecommendationResult(data) {
             };
 
             itemDiv.innerHTML = `
-                <span class="rec-word">${rec.word}</span>
-                <span class="rec-remain-val">${rec.expected_remain}개</span>
+                <div class="rec-rank">${idx + 1}</div>
+                <div class="rec-body">
+                    <div class="rec-header">
+                        <span class="rec-word">${rec.word}</span>
+                        <span class="rec-strategy">${rec.strategy}</span>
+                    </div>
+                    <div class="rec-reason">${rec.reason}</div>
+                </div>
+                <div class="rec-remain-box">
+                    <span class="rec-remain-label">평균 남은 단어</span>
+                    <span class="rec-remain-val">${rec.expected_remain}개</span>
+                </div>
             `;
             recContainer.appendChild(itemDiv);
         });
