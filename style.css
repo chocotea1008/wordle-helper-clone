@@ -676,27 +676,27 @@ header {
 @keyframes flipGreen {
     0% {
         transform: rotateX(0deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     45% {
         transform: rotateX(90deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     55% {
         transform: rotateX(90deg);
-        background-color: var(--color-green);
-        border-color: var(--color-green);
-        color: #ffffff;
+        background-color: var(--color-green) !important;
+        border-color: var(--color-green) !important;
+        color: #ffffff !important;
     }
     100% {
         transform: rotateX(0deg);
-        background-color: var(--color-green);
-        border-color: var(--color-green);
-        color: #ffffff;
+        background-color: var(--color-green) !important;
+        border-color: var(--color-green) !important;
+        color: #ffffff !important;
     }
 }
 
@@ -704,27 +704,27 @@ header {
 @keyframes flipYellow {
     0% {
         transform: rotateX(0deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     45% {
         transform: rotateX(90deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     55% {
         transform: rotateX(90deg);
-        background-color: var(--color-yellow);
-        border-color: var(--color-yellow);
-        color: #ffffff;
+        background-color: var(--color-yellow) !important;
+        border-color: var(--color-yellow) !important;
+        color: #ffffff !important;
     }
     100% {
         transform: rotateX(0deg);
-        background-color: var(--color-yellow);
-        border-color: var(--color-yellow);
-        color: #ffffff;
+        background-color: var(--color-yellow) !important;
+        border-color: var(--color-yellow) !important;
+        color: #ffffff !important;
     }
 }
 
@@ -732,27 +732,27 @@ header {
 @keyframes flipGrey {
     0% {
         transform: rotateX(0deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     45% {
         transform: rotateX(90deg);
-        background-color: #ffffff;
-        border-color: #cbd5e1;
-        color: var(--text-primary);
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        color: var(--text-primary) !important;
     }
     55% {
         transform: rotateX(90deg);
-        background-color: #64748b;
-        border-color: #64748b;
-        color: #ffffff;
+        background-color: #64748b !important;
+        border-color: #64748b !important;
+        color: #ffffff !important;
     }
     100% {
         transform: rotateX(0deg);
-        background-color: #64748b;
-        border-color: #64748b;
-        color: #ffffff;
+        background-color: #64748b !important;
+        border-color: #64748b !important;
+        color: #ffffff !important;
     }
 }
 
@@ -773,7 +773,7 @@ header {
 .tile-flip-yellow { animation: flipYellow 0.5s ease both; }
 .tile-flip-grey { animation: flipGrey 0.5s ease both; }
 .row-shake { animation: rowShake 0.45s ease-in-out; }
-.win-bounce { animation: winBounce 0.55s ease forwards; }
+.win-bounce { animation: winBounce 0.55s ease forwards !important; }
 .pulse { animation: pulse 0.3s ease !important; }
 .pop-in { animation: tilePopIn 0.12s ease forwards; }
 

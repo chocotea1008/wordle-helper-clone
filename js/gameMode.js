@@ -251,8 +251,8 @@ function submitGameGuess() {
 
     const animDuration = isGameAnimEnabled ? ((currentGameLen * 200) + 400) : 0;
 
-    // 회전 애니메이션 완료 후 상태를 정적 클래스로 전환 (탭 전환 시 재실행 방지)
-    if (isGameAnimEnabled) {
+    // 회전 애니메이션 완료 후 상태를 정적 클래스로 전환 (게임 진행 중인 경우)
+    if (isGameAnimEnabled && !isWin) {
         setTimeout(() => {
             lastSubmittedRow = -1;
             renderGameBoard();
@@ -267,6 +267,8 @@ function submitGameGuess() {
                 const winningRow = rows[gameHistory.length - 1];
                 if (winningRow) {
                     winningRow.querySelectorAll('.game-tile').forEach((t, i) => {
+                        t.classList.remove('tile-flip-green');
+                        void t.offsetWidth;
                         t.classList.add('win-bounce');
                         t.style.animationDelay = `${i * 0.08}s`;
                     });
@@ -316,18 +318,18 @@ function renderGameBoard() {
                 tile.innerText = guessJamos[j] || '';
                 tile.classList.add('filled');
 
+                // 항상 기본 정답 상태 클래스(초록/노랑/회색)를 유지하여 바운스 후에도 흰색으로 초기화되지 않음
+                if (guessPattern[j] === '초') tile.classList.add('state-green');
+                else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
+                else tile.classList.add('state-grey');
+
                 if (i === lastSubmittedRow && isGameAnimEnabled) {
-                    // 방금 제출한 행 (애니메이션 ON): 시작 시 흰색 유지 -> 90도 회전 시점에 색상 공개!
+                    // 방금 제출한 행 (애니메이션 ON): 90도 회전 시점에 색상 공개 효과 실행
                     if (guessPattern[j] === '초') tile.classList.add('tile-flip-green');
                     else if (guessPattern[j] === '노') tile.classList.add('tile-flip-yellow');
                     else tile.classList.add('tile-flip-grey');
 
                     tile.style.animationDelay = `${j * 0.2}s`;
-                } else {
-                    // 이미 과거에 회전 완료된 행 또는 애니메이션 OFF: 즉시 정적 색상 적용
-                    if (guessPattern[j] === '초') tile.classList.add('state-green');
-                    else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
-                    else tile.classList.add('state-grey');
                 }
             } else if (i === gameHistory.length) {
                 // 현재 타이핑 입력 중인 행
