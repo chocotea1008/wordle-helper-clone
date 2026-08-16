@@ -34,27 +34,7 @@ const PRECALCULATED_STARTERS = {
     }
 };
 
-// --- LocalStorage Caching & History Persistence ---
-function getHistoryStorageKey(len = currentJamoLen) {
-    return `wordle_cheat_history_v2_${len}`;
-}
-
-function saveCheatState() {
-    try {
-        localStorage.setItem(getHistoryStorageKey(currentJamoLen), JSON.stringify(history));
-    } catch (e) {}
-}
-
-function loadCheatState(len = currentJamoLen) {
-    try {
-        const stored = localStorage.getItem(getHistoryStorageKey(len));
-        if (stored) {
-            return JSON.parse(stored);
-        }
-    } catch (e) {}
-    return [];
-}
-
+// --- LocalStorage Calculation Caching ---
 function getCalcCacheKey(historyArr, len = currentJamoLen) {
     return `wordle_calc_cache_v2_${len}_` + JSON.stringify(historyArr);
 }
@@ -142,16 +122,11 @@ function renderDefaultRecommendations(len) {
         };
 
         itemDiv.innerHTML = `
-            <div class="rec-rank">${idx + 1}</div>
-            <div class="rec-body">
-                <div class="rec-header">
-                    <span class="rec-word">${rec.word}</span>
-                    <span class="rec-strategy">${rec.strategy}</span>
-                </div>
-                <div class="rec-reason">${rec.reason}</div>
+            <div class="rec-left">
+                <div class="rec-rank">${idx + 1}</div>
+                <span class="rec-word">${rec.word}</span>
             </div>
-            <div class="rec-remain-box">
-                <span class="rec-remain-label">재귀적 정답 수렴</span>
+            <div class="rec-right">
                 <span class="rec-remain-val">${rec.remain}</span>
             </div>
         `;
@@ -318,15 +293,10 @@ function switchMode(len) {
     document.getElementById('tab-6').classList.toggle('active', len === 6);
     document.getElementById('tab-7').classList.toggle('active', len === 7);
 
-    history = loadCheatState(len);
+    history = [];
     initInputFields();
     updateHistoryUI();
-
-    if (history.length > 0) {
-        fetchRecommendation();
-    } else {
-        renderDefaultRecommendations(len);
-    }
+    renderDefaultRecommendations(len);
 }
 
 // 10. 현재 추측 추가 및 추천 실행
@@ -345,7 +315,6 @@ function addCurrentGuess() {
         hint: hintValues
     });
 
-    saveCheatState();
     initInputFields();
     updateHistoryUI();
     fetchRecommendation();
@@ -354,7 +323,6 @@ function addCurrentGuess() {
 // 11. 전체 초기화
 function resetAll() {
     history = [];
-    saveCheatState();
     initInputFields();
     updateHistoryUI();
     renderDefaultRecommendations(currentJamoLen);
@@ -364,7 +332,6 @@ function resetAll() {
 // 12. 히스토리 항목 삭제
 function deleteHistoryItem(index) {
     history.splice(index, 1);
-    saveCheatState();
     updateHistoryUI();
     if (history.length === 0) {
         renderDefaultRecommendations(currentJamoLen);
@@ -458,7 +425,7 @@ async function fetchRecommendation() {
     }
 }
 
-// 추천 결과 DOM 렌더링 헬퍼
+// 추천 결과 DOM 렌더링 헬퍼 (심플한 단어 + 평균 남은 단어 수)
 function renderRecommendationResult(data) {
     document.getElementById('cand-count').innerText = data.remain_count.toLocaleString();
 
@@ -478,17 +445,12 @@ function renderRecommendationResult(data) {
             };
 
             itemDiv.innerHTML = `
-                <div class="rec-rank">${idx + 1}</div>
-                <div class="rec-body">
-                    <div class="rec-header">
-                        <span class="rec-word">${rec.word}</span>
-                        <span class="rec-strategy">${rec.strategy}</span>
-                    </div>
-                    <div class="rec-reason">${rec.reason}</div>
+                <div class="rec-left">
+                    <div class="rec-rank">${idx + 1}</div>
+                    <span class="rec-word">${rec.word}</span>
                 </div>
-                <div class="rec-remain-box">
-                    <span class="rec-remain-label">평균 남은 단어</span>
-                    <span class="rec-remain-val">${rec.expected_remain}개</span>
+                <div class="rec-right">
+                    <span class="rec-remain-val">평균 ${rec.expected_remain}개</span>
                 </div>
             `;
             recContainer.appendChild(itemDiv);
@@ -518,14 +480,15 @@ function renderRecommendationResult(data) {
     }
 }
 
-// 초기 앱 로드 및 복원
+// 초기 앱 로드 및 복원 (새로고침 시 항상 깨끗하게 초기화)
 function initCheatApp() {
-    history = loadCheatState(currentJamoLen);
+    try {
+        localStorage.removeItem('wordle_cheat_history_v2_5');
+        localStorage.removeItem('wordle_cheat_history_v2_6');
+        localStorage.removeItem('wordle_cheat_history_v2_7');
+    } catch (e) {}
+    history = [];
     initInputFields();
     updateHistoryUI();
-    if (history.length > 0) {
-        fetchRecommendation();
-    } else {
-        renderDefaultRecommendations(currentJamoLen);
-    }
+    renderDefaultRecommendations(currentJamoLen);
 }

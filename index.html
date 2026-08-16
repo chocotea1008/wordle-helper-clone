@@ -24,8 +24,8 @@
 
     <!-- ============ 치트키 모드 ============ -->
     <main id="cheat-view">
-        <!-- 왼쪽: 입력 + 기록 -->
-        <div class="solver-section">
+        <!-- 1. 힌트 입력 -->
+        <div class="solver-section" id="section-input">
             <div class="card">
                 <h2 class="card-title" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem;">
                     <span>힌트 입력</span>
@@ -52,22 +52,11 @@
                     </div>
                 </div>
             </div>
-
-            <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
-                <h2 class="card-title" style="justify-content: space-between;">
-                    <span>진행 기록</span>
-                    <button class="btn-delete" onclick="resetAll()">전체 초기화</button>
-                </h2>
-                <div class="history-list" id="history-container"
-                    style="height: 380px; overflow-y: auto; padding-right: 5px;">
-                    <div class="placeholder-text">아직 입력된 기록이 없습니다.<br>첫 턴 추천 단어로 시작해 보세요!</div>
-                </div>
-            </div>
         </div>
 
-        <!-- 중앙: 추천 단어 -->
-        <div class="recommend-section">
-            <div class="card" style="padding: 1.5rem;">
+        <!-- 2. 추천 단어 -->
+        <div class="recommend-section" id="section-recommend">
+            <div class="card" style="padding: 1.25rem 1.5rem;">
                 <h2 class="card-title"
                     style="justify-content: space-between; margin-bottom: 1rem; border-bottom: none; padding-bottom: 0;">
                     <span>추천 단어</span>
@@ -75,14 +64,14 @@
                         남은 후보: <span id="cand-count" style="color: var(--color-green); font-weight: 700;">23,713</span>개
                     </span>
                 </h2>
-                <div id="recommendations-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div id="recommendations-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <!-- Dynamically populated -->
                 </div>
             </div>
         </div>
 
-        <!-- 오른쪽: 정답 후보군 -->
-        <div class="candidates-section">
+        <!-- 3. 정답 후보군 -->
+        <div class="candidates-section" id="section-candidates">
             <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
                 <h2 class="card-title">정답 후보군</h2>
                 <div class="list-container" style="height: 500px; overflow-y: auto; padding-right: 5px;">
@@ -95,43 +84,59 @@
             </div>
         </div>
 
-        <!-- 하단 가이드 (접을 수 있는 아코디언) -->
-        <div class="guide-box" style="grid-column: 1 / -1; margin-top: 0.5rem;">
-            <div class="guide-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
-                <strong>📖 사용 방법 가이드</strong>
-                <span class="chevron">▼</span>
-            </div>
-            <div class="guide-content">
-                <ul style="margin-top: 0.75rem;">
-                    <li>첫 턴은 추천 단어 중 마음에 드는 단어(예: <strong>[가위]</strong>)를 클릭하세요. 자모가 자동으로 입력됩니다!</li>
-                    <li>채워진 단어를 워들 게임에 입력한 후, 결과로 얻은 초록/노랑/회색 힌트를 입력 창에 똑같이 만들어 줍니다.</li>
-                    <li>자모 칸 아래의 <strong>[회색]</strong> 버튼을 클릭하거나 <strong>숫자키 1~7</strong>을 누르면 <strong>회색 → 노란색 → 초록색</strong> 순으로 바뀝니다.</li>
-                    <li><strong>[확인 및 추가]</strong>를 누르면 다음 최적 추천 단어 5가지가 실시간 계산됩니다!</li>
-                </ul>
+        <!-- 4. 진행 기록 -->
+        <div class="history-section" id="section-history">
+            <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
+                <h2 class="card-title" style="justify-content: space-between;">
+                    <span>진행 기록</span>
+                    <button class="btn-delete" onclick="resetAll()">전체 초기화</button>
+                </h2>
+                <div class="history-list" id="history-container"
+                    style="height: 380px; overflow-y: auto; padding-right: 5px;">
+                    <div class="placeholder-text">아직 입력된 기록이 없습니다.<br>첫 턴 추천 단어로 시작해 보세요!</div>
+                </div>
             </div>
         </div>
 
-        <div class="guide-box" style="grid-column: 1 / -1; margin-top: 0;">
-            <div class="guide-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
-                <strong>⚙️ 작동 원리 및 알고리즘</strong>
-                <span class="chevron">▼</span>
+        <!-- 5. 하단 가이드 (접을 수 있는 아코디언) -->
+        <div class="guide-section" id="section-guide" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="guide-box">
+                <div class="guide-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <strong>📖 사용 방법 가이드</strong>
+                    <span class="chevron">▼</span>
+                </div>
+                <div class="guide-content">
+                    <ul style="margin-top: 0.75rem;">
+                        <li>첫 턴은 추천 단어 중 마음에 드는 단어(예: <strong>[가위]</strong>)를 클릭하세요. 자모가 자동으로 입력됩니다!</li>
+                        <li>채워진 단어를 워들 게임에 입력한 후, 결과로 얻은 초록/노랑/회색 힌트를 입력 창에 똑같이 만들어 줍니다.</li>
+                        <li>자모 칸 아래의 <strong>[회색]</strong> 버튼을 클릭하거나 <strong>숫자키 1~7</strong>을 누르면 <strong>회색 → 노란색 → 초록색</strong> 순으로 바뀝니다.</li>
+                        <li><strong>[추가]</strong>를 누르면 다음 최적 추천 단어 5가지가 실시간 계산됩니다!</li>
+                    </ul>
+                </div>
             </div>
-            <div class="guide-content">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 0.75rem;">
-                    <div>
-                        <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">1. 자모 분해 매칭</span>
-                        <p style="font-size: 0.8rem; line-height: 1.5;">한글 워들은 글자 단위가 아닌 <strong>초성/중성/종성(자모)</strong> 단위로 판정합니다. 예: '기낭' → 'ㄱ, ㅣ, ㄴ, ㅏ, ㅇ' 총 5개의 자모로 분해합니다.</p>
-                    </div>
-                    <div>
-                        <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">2. 섀넌 엔트로피 (Shannon Entropy)</span>
-                        <p style="font-size: 0.8rem; line-height: 1.5;">남은 후보 단어들을 가장 많이 제거할 수 있는 '수학적 정보량'을 계산하여 최적의 단어를 추천합니다.</p>
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                        <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">3. 동적 게임 전략</span>
-                        <p style="font-size: 0.8rem; line-height: 1.5;">
-                            <strong>초반전 (1~3턴):</strong> 정보 획득량(엔트로피)이 가장 높은 단어를 추천합니다.<br>
-                            <strong>후반전 (4턴~):</strong> 일상 명사에 높은 가중치를 부여하여 정답 직접 맞추기 확률을 극대화합니다.
-                        </p>
+
+            <div class="guide-box">
+                <div class="guide-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open');">
+                    <strong>⚙️ 작동 원리 및 알고리즘</strong>
+                    <span class="chevron">▼</span>
+                </div>
+                <div class="guide-content">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 0.75rem;">
+                        <div>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">1. 자모 분해 매칭</span>
+                            <p style="font-size: 0.8rem; line-height: 1.5;">한글 워들은 글자 단위가 아닌 <strong>초성/중성/종성(자모)</strong> 단위로 판정합니다. 예: '기낭' → 'ㄱ, ㅣ, ㄴ, ㅏ, ㅇ' 총 5개의 자모로 분해합니다.</p>
+                        </div>
+                        <div>
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">2. 섀넌 엔트로피 (Shannon Entropy)</span>
+                            <p style="font-size: 0.8rem; line-height: 1.5;">남은 후보 단어들을 가장 많이 제거할 수 있는 '수학적 정보량'을 계산하여 최적의 단어를 추천합니다.</p>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">3. 동적 게임 전략</span>
+                            <p style="font-size: 0.8rem; line-height: 1.5;">
+                                <strong>초반전 (1~3턴):</strong> 정보 획득량(엔트로피)이 가장 높은 단어를 추천합니다.<br>
+                                <strong>후반전 (4턴~):</strong> 일상 명사에 높은 가중치를 부여하여 정답 직접 맞추기 확률을 극대화합니다.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

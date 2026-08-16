@@ -87,10 +87,21 @@ header {
 #cheat-view {
     display: grid;
     grid-template-columns: 1.1fr 1.2fr 0.9fr;
+    grid-template-areas:
+        "input recommend candidates"
+        "history recommend candidates"
+        "guide guide guide";
     gap: 1.25rem;
     max-width: 1400px;
     margin: 0 auto;
+    align-items: start;
 }
+
+#section-input { grid-area: input; }
+#section-history { grid-area: history; }
+#section-recommend { grid-area: recommend; }
+#section-candidates { grid-area: candidates; }
+#section-guide { grid-area: guide; }
 
 #game-view {
     display: grid;
@@ -341,8 +352,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.85rem;
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     background: #fafafa;
     border: 1.5px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -362,9 +372,15 @@ header {
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
+.rec-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
 .rec-rank {
-    min-width: 28px;
-    height: 28px;
+    min-width: 26px;
+    height: 26px;
     border-radius: 50%;
     background: #e2e8f0;
     color: var(--text-secondary);
@@ -381,52 +397,20 @@ header {
     color: #ffffff;
 }
 
-.rec-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.rec-header {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-}
-
 .rec-word {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
-.rec-strategy {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.rec-reason {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    line-height: 1.35;
-}
-
-.rec-remain-box {
+.rec-right {
     text-align: right;
     white-space: nowrap;
-    min-width: 80px;
-}
-
-.rec-remain-label {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    display: block;
-    line-height: 1.2;
 }
 
 .rec-remain-val {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--color-green);
 }
@@ -601,18 +585,43 @@ header {
 
 /* --- Responsive --- */
 @media (max-width: 1100px) {
-    #cheat-view { grid-template-columns: 1fr 1fr; }
-    .candidates-section { grid-column: 1 / -1; }
+    #cheat-view {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "input recommend"
+            "history candidates"
+            "guide guide";
+    }
 }
 
 @media (max-width: 768px) {
     body { padding: 0.75rem; }
-    #cheat-view, #game-view { grid-template-columns: 1fr; }
+    
+    #cheat-view {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    #section-input { order: 1; }
+    #section-recommend { order: 2; }
+    #section-candidates { order: 3; }
+    #section-history { order: 4; }
+    #section-guide { order: 5; }
+
+    #section-candidates .list-container {
+        max-height: 250px;
+        height: auto;
+    }
+    #section-history .history-list {
+        max-height: 250px;
+        height: auto;
+    }
+
+    #game-view { grid-template-columns: 1fr; }
     .tile-input { width: 44px; height: 44px; font-size: 1.1rem; }
     .hint-btn { width: 44px; height: 26px; }
     .hint-number { width: 44px; }
     .game-tile { width: 46px; height: 46px; font-size: 1.15rem; }
-    .guide-box { grid-column: 1 / -1; }
 }
 
 @media (max-width: 480px) {
