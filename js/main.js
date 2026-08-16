@@ -76,9 +76,8 @@ document.addEventListener('keydown', (e) => {
 
         if (tag === 'INPUT') return;
 
-        if (e.key.length > 1 && e.key !== 'Backspace' && e.key !== 'Process') return;
-
         if (e.key === 'Backspace') {
+            e.preventDefault();
             let lastFilled = null;
             for (let i = inputs.length - 1; i >= 0; i--) {
                 if (inputs[i] && inputs[i].value) {
@@ -86,14 +85,46 @@ document.addEventListener('keydown', (e) => {
                     break;
                 }
             }
-            if (lastFilled) lastFilled.focus();
-            else if (inputs.length > 0) inputs[0].focus();
-        } else {
-            const firstEmpty = inputs.find(inp => !inp.value);
-            if (firstEmpty) {
-                firstEmpty.focus();
+            if (lastFilled) {
+                lastFilled.value = '';
+                lastFilled.focus();
+                updateAddButtonState();
             } else if (inputs.length > 0) {
-                inputs[inputs.length - 1].focus();
+                inputs[0].focus();
+            }
+            return;
+        }
+
+        if (e.key.length > 1 && e.key !== 'Process') return;
+
+        // 영문 입력 자동 한글 자모 변환
+        const jamoMap = {
+            'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ', 'y': 'ㅛ', 'u': 'ㅕ', 'i': 'ㅑ', 'o': 'ㅐ', 'p': 'ㅔ',
+            'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ', 'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'l': 'ㅣ',
+            'z': 'ㅋ', 'x': 'ㅌ', 'c': 'ㅊ', 'v': 'ㅍ', 'b': 'ㅠ', 'n': 'ㅜ', 'm': 'ㅡ',
+            'Q': 'ㅃ', 'W': 'ㅉ', 'E': 'ㄸ', 'R': 'ㄲ', 'T': 'ㅆ', 'O': 'ㅒ', 'P': 'ㅖ'
+        };
+
+        let targetChar = '';
+        if (/^[ㄱ-ㅎㅏ-ㅣ]$/.test(e.key)) {
+            targetChar = e.key;
+        } else if (jamoMap[e.key]) {
+            targetChar = jamoMap[e.key];
+        } else if (jamoMap[e.key.toLowerCase()]) {
+            targetChar = jamoMap[e.key.toLowerCase()];
+        }
+
+        if (targetChar) {
+            e.preventDefault();
+            const firstEmptyIdx = inputs.findIndex(inp => !inp.value);
+            if (firstEmptyIdx !== -1) {
+                const decomposed = decomposeKoreanWord(targetChar);
+                for (let k = 0; k < decomposed.length && (firstEmptyIdx + k) < currentJamoLen; k++) {
+                    inputs[firstEmptyIdx + k].value = decomposed[k];
+                }
+                const nextIdx = Math.min(firstEmptyIdx + decomposed.length, currentJamoLen - 1);
+                if (inputs[nextIdx]) inputs[nextIdx].focus();
+                updateAddButtonState();
             }
         }
     } else if (gameView && gameView.style.display !== 'none') {

@@ -184,36 +184,40 @@ function renderInputTiles() {
         input.dataset.index = i;
 
         input.addEventListener('input', (e) => {
-            const val = e.target.value;
-            if (val.length > 0) {
-                const char = val.charAt(val.length - 1);
-                if (char === 'ㅐ') {
-                    input.value = 'ㅏ';
-                    if (i < currentJamoLen - 1) {
-                        inputs[i + 1].value = 'ㅣ';
-                        if (i < currentJamoLen - 2) {
-                            inputs[i + 2].focus();
-                        } else {
-                            inputs[i + 1].focus();
-                        }
-                    }
-                } else if (char === 'ㅔ') {
-                    input.value = 'ㅓ';
-                    if (i < currentJamoLen - 1) {
-                        inputs[i + 1].value = 'ㅣ';
-                        if (i < currentJamoLen - 2) {
-                            inputs[i + 2].focus();
-                        } else {
-                            inputs[i + 1].focus();
-                        }
-                    }
-                } else {
-                    input.value = char;
-                    if (i < currentJamoLen - 1) {
-                        inputs[i + 1].focus();
-                    }
-                }
+            const rawVal = e.target.value;
+            if (!rawVal) {
+                updateAddButtonState();
+                return;
             }
+
+            // 영문 입력 자동 한글 자모 변환 맵 (QWERTY -> 2벌식)
+            const jamoMap = {
+                'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ', 'y': 'ㅛ', 'u': 'ㅕ', 'i': 'ㅑ', 'o': 'ㅐ', 'p': 'ㅔ',
+                'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ', 'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'l': 'ㅣ',
+                'z': 'ㅋ', 'x': 'ㅌ', 'c': 'ㅊ', 'v': 'ㅍ', 'b': 'ㅠ', 'n': 'ㅜ', 'm': 'ㅡ',
+                'Q': 'ㅃ', 'W': 'ㅉ', 'E': 'ㄸ', 'R': 'ㄲ', 'T': 'ㅆ', 'O': 'ㅒ', 'P': 'ㅖ'
+            };
+
+            // 영문자가 포함된 경우 즉시 한글 자모로 치환
+            let converted = '';
+            for (let c of rawVal) {
+                if (jamoMap[c]) converted += jamoMap[c];
+                else if (jamoMap[c.toLowerCase()]) converted += jamoMap[c.toLowerCase()];
+                else converted += c;
+            }
+
+            // 한글 음절(예: '가') 또는 복합 자모(ㅐ, ㅚ 등) 자동 분해
+            const decomposed = decomposeKoreanWord(converted);
+            if (decomposed.length > 0) {
+                for (let k = 0; k < decomposed.length && (i + k) < currentJamoLen; k++) {
+                    inputs[i + k].value = decomposed[k];
+                }
+                const nextIdx = Math.min(i + decomposed.length, currentJamoLen - 1);
+                if (inputs[nextIdx]) inputs[nextIdx].focus();
+            } else {
+                input.value = '';
+            }
+
             updateAddButtonState();
         });
 
