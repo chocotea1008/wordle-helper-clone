@@ -1,5 +1,9 @@
+// --- 직접 플레이 (Wordle Game) 모드 컨트롤러 ---
+
+let lastSubmittedRow = -1;
+
 function switchGameMode(len) {
-    if (currentGameLen === len) return;
+    if (currentGameLen === len && gameAnswer) return;
     currentGameLen = len;
     document.getElementById('game-tab-5').classList.toggle('active', len === 5);
     document.getElementById('game-tab-6').classList.toggle('active', len === 6);
@@ -8,29 +12,36 @@ function switchGameMode(len) {
 }
 
 function initGame(len = currentGameLen) {
+    currentGameLen = len;
     gameHistory = [];
     currentTypedJamos = [];
     gameOver = false;
-    document.getElementById('game-message').innerText = "";
-    document.getElementById('game-message').style.color = "var(--color-yellow)";
+    lastSubmittedRow = -1;
 
-    // 실사용 친숙한 단어 우선 채택 (리서치 기반 어휘 사전)
+    const msg = document.getElementById('game-message');
+    if (msg) {
+        msg.innerText = "";
+        msg.style.color = "var(--color-yellow)";
+    }
+
+    // 가상 키보드 상태 초기화
+    document.querySelectorAll('.vk-key').forEach(btn => {
+        btn.classList.remove('state-green', 'state-yellow', 'state-grey', 'key-green', 'key-yellow', 'key-grey');
+    });
+
+    // 실사용 친숙한 단어 우선 채택
     let commonList = (typeof COMMON_ANSWER_WORDS !== 'undefined' && COMMON_ANSWER_WORDS[len]) ? COMMON_ANSWER_WORDS[len] : [];
 
     let validWords = commonList.filter(w => {
         const jamos = decomposeKoreanWord(w);
-        if (jamos.length !== len) return false;
-        
-        return true;
+        return jamos.length === len;
     });
 
     // Fallback to ALL_WORDS if no match in common list
-    if (validWords.length === 0) {
+    if (validWords.length === 0 && typeof ALL_WORDS !== 'undefined') {
         validWords = ALL_WORDS.filter(w => {
             const jamos = decomposeKoreanWord(w);
-            if (jamos.length !== len) return false;
-            
-            return true;
+            return jamos.length === len;
         });
     }
 
@@ -38,14 +49,17 @@ function initGame(len = currentGameLen) {
         gameAnswer = validWords[Math.floor(Math.random() * validWords.length)];
         gameAnswerJamos = decomposeKoreanWord(gameAnswer);
     } else {
-        gameAnswer = "";
-        gameAnswerJamos = [];
+        gameAnswer = "가위";
+        gameAnswerJamos = decomposeKoreanWord(gameAnswer);
     }
 
     renderGameBoard();
 }
 
 function vkClick(jamo) {
+    if (gameOver) return;
+    lastSubmittedRow = -1;
+
     if (jamo === 'ㅐ') {
         vkClick('ㅏ');
         vkClick('ㅣ');
@@ -63,6 +77,9 @@ function vkClick(jamo) {
 }
 
 function vkBackspace() {
+    if (gameOver) return;
+    lastSubmittedRow = -1;
+
     if (currentTypedJamos.length > 0) {
         currentTypedJamos.pop();
         renderGameBoard();
@@ -73,12 +90,15 @@ function getPattern(guess, answer) {
     const pattern = new Array(guess.length).fill('회');
     const ansArr = [...answer];
 
+    // 1st Pass: Green (초록색) 정확 일치
     for (let i = 0; i < guess.length; i++) {
         if (guess[i] === ansArr[i]) {
             pattern[i] = '초';
             ansArr[i] = null;
         }
     }
+
+    // 2nd Pass: Yellow (노란색) 위치 불일치 포함
     for (let i = 0; i < guess.length; i++) {
         if (pattern[i] !== '초' && ansArr.includes(guess[i])) {
             pattern[i] = '노';
@@ -92,10 +112,24 @@ function submitGameGuess() {
     if (gameOver) return;
 
     if (currentTypedJamos.length !== currentGameLen) {
+        // 행 흔들림 애니메이션 피드백
+        const rows = document.querySelectorAll('.game-row');
+        const currentRow = rows[gameHistory.length];
+        if (currentRow) {
+            currentRow.classList.remove('row-shake');
+            void currentRow.offsetWidth;
+            currentRow.classList.add('row-shake');
+        }
+
         const msg = document.getElementById('game-message');
-        msg.innerText = "자모를 모두 입력해주세요.";
-        msg.style.color = "var(--color-yellow)";
-        setTimeout(() => { if (!gameOver) msg.innerText = ""; }, 2000);
+        if (msg) {
+            msg.innerText = "자모를 모두 입력해주세요.";
+            msg.style.color = "var(--color-yellow)";
+            setTimeout(() => { if (!gameOver) msg.innerText = ""; }, 2000);
+        }
+        if (typeof showToast === 'function') {
+            showToast("자모를 모두 입력해주세요.", "warning");
+        }
         return;
     }
 
@@ -103,21 +137,48 @@ function submitGameGuess() {
     const patternStr = getPattern(jamos, gameAnswerJamos);
     const pattern = patternStr.split('');
 
+    lastSubmittedRow = gameHistory.length;
     gameHistory.push({ word: '', jamos, pattern });
     currentTypedJamos = [];
 
     renderGameBoard();
 
     const msg = document.getElementById('game-message');
-    if (patternStr === '초'.repeat(currentGameLen)) {
+    const isWin = patternStr === '초'.repeat(currentGameLen);
+    const isLoss = !isWin && gameHistory.length >= MAX_GUESSES;
+
+    const animDuration = (currentGameLen * 180) + 400;
+
+    if (isWin) {
         gameOver = true;
-        msg.innerText = "🎉 정답입니다! (" + gameAnswer + ")";
-        msg.style.color = "var(--color-green)";
-        setTimeout(() => { const rows = document.querySelectorAll('.game-row'); const lastRow = rows[gameHistory.length - 1]; if(lastRow) { lastRow.querySelectorAll('.game-tile').forEach((t,i) => { t.classList.add('bounce'); t.style.animationDelay = `${i*0.1}s`; }); } }, 500);
-    } else if (gameHistory.length >= MAX_GUESSES) {
+        setTimeout(() => {
+            const rows = document.querySelectorAll('.game-row');
+            const winningRow = rows[gameHistory.length - 1];
+            if (winningRow) {
+                winningRow.querySelectorAll('.game-tile').forEach((t, i) => {
+                    t.classList.add('win-bounce');
+                    t.style.animationDelay = `${i * 0.08}s`;
+                });
+            }
+            if (msg) {
+                msg.innerText = `🎉 정답입니다! (${gameAnswer})`;
+                msg.style.color = "var(--color-green)";
+            }
+            if (typeof showToast === 'function') {
+                showToast(`🎉 정답입니다! (${gameAnswer})`, "success");
+            }
+        }, animDuration);
+    } else if (isLoss) {
         gameOver = true;
-        msg.innerText = "아쉽네요! 정답은: " + gameAnswer;
-        msg.style.color = "var(--color-yellow)";
+        setTimeout(() => {
+            if (msg) {
+                msg.innerText = `아쉽네요! 정답은: ${gameAnswer}`;
+                msg.style.color = "var(--color-yellow)";
+            }
+            if (typeof showToast === 'function') {
+                showToast(`정답은 '${gameAnswer}' 였습니다.`, "info");
+            }
+        }, animDuration);
     }
 }
 
@@ -138,8 +199,8 @@ function updateKeyboardState() {
     });
 
     document.querySelectorAll('.vk-key').forEach(btn => {
-        const char = btn.innerText;
-        btn.classList.remove('state-green', 'state-yellow', 'state-grey');
+        const char = btn.innerText.trim();
+        btn.classList.remove('state-green', 'state-yellow', 'state-grey', 'key-green', 'key-yellow', 'key-grey');
         if (kbState[char]) {
             btn.classList.add(kbState[char]);
         }
@@ -148,8 +209,9 @@ function updateKeyboardState() {
 }
 
 function renderGameBoard() {
-    const kbState = updateKeyboardState();
+    updateKeyboardState();
     const board = document.getElementById('game-board');
+    if (!board) return;
     board.innerHTML = "";
 
     for (let i = 0; i < MAX_GUESSES; i++) {
@@ -165,37 +227,25 @@ function renderGameBoard() {
             tile.className = 'game-tile';
 
             if (guess) {
+                // 이미 제출된 과거 추측 타일
                 tile.innerText = guessJamos[j] || '';
                 tile.classList.add('filled');
                 if (guessPattern[j] === '초') tile.classList.add('state-green');
                 else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
                 else tile.classList.add('state-grey');
-                tile.classList.add('flip-in');
-                tile.style.animationDelay = `${j * 0.15}s`;
-            } else if (i === gameHistory.length) {
-                tile.innerText = guessJamos[j] || '';
-                if (guessJamos[j]) {
-                    tile.classList.add('pop-in');
-                    if (kbState[guessJamos[j]] === 'state-grey') {
-                        tile.style.backgroundColor = "var(--color-grey)";
-                        tile.style.color = "#fff";
-                        tile.style.borderColor = "var(--color-grey)";
-                        tile.style.opacity = "0.7";
-                    } else {
-                        tile.style.borderColor = "var(--text-secondary)";
-                        tile.style.backgroundColor = "#fff";
-                        tile.style.color = "var(--text-primary)";
-                        tile.style.opacity = "1";
-                    }
-                    tile.style.transform = "scale(1.05)";
-                    setTimeout(() => tile.style.transform = "scale(1)", 100);
-                } else {
-                    tile.style.backgroundColor = "#fff";
-                    tile.style.color = "var(--text-primary)";
-                    tile.style.borderColor = "#cbd5e1";
-                    tile.style.opacity = "1";
+
+                // 방금 제출한 행만 플립 회전 애니메이션 적용
+                if (i === lastSubmittedRow) {
+                    tile.classList.add('tile-flip');
+                    tile.style.animationDelay = `${j * 0.18}s`;
                 }
-                tile.style.transition = "transform 0.1s";
+            } else if (i === gameHistory.length) {
+                // 현재 입력 중인 행
+                const char = guessJamos[j] || '';
+                tile.innerText = char;
+                if (char) {
+                    tile.classList.add('active-input', 'tile-pop');
+                }
             }
             row.appendChild(tile);
         }
@@ -247,6 +297,7 @@ function setCustomAnswer() {
     gameHistory = [];
     currentTypedJamos = [];
     gameOver = false;
+    lastSubmittedRow = -1;
 
     const msg = document.getElementById('game-message');
     if (msg) {

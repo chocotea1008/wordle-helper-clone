@@ -506,51 +506,81 @@ header {
 }
 
 /* --- Game Board --- */
-.game-row { display: flex; gap: 5px; }
+.game-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+}
 
 .game-tile {
-    width: 55px;
-    height: 55px;
-    border: 2px solid var(--border-color);
+    width: clamp(38px, 10vw, 52px);
+    height: clamp(38px, 10vw, 52px);
+    border: 2px solid #cbd5e1;
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
     font-weight: 700;
     color: var(--text-primary);
     background: #fff;
-    transition: border-color 0.15s;
+    box-sizing: border-box;
+    user-select: none;
+    transition: border-color 0.15s ease;
 }
 
-.game-tile.filled { border-color: #94a3b8; }
-.game-tile.game-green { background: var(--color-green); border-color: var(--color-green); color: #fff; }
-.game-tile.game-yellow { background: var(--color-yellow); border-color: var(--color-yellow); color: #fff; }
-.game-tile.game-grey { background: var(--color-grey); border-color: var(--color-grey); color: #fff; }
-.game-tile.game-absent { opacity: 0.4; }
+.game-tile.active-input {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.game-tile.state-green,
+.game-tile.game-green {
+    background-color: var(--color-green) !important;
+    border-color: var(--color-green) !important;
+    color: #ffffff !important;
+}
+
+.game-tile.state-yellow,
+.game-tile.game-yellow {
+    background-color: var(--color-yellow) !important;
+    border-color: var(--color-yellow) !important;
+    color: #ffffff !important;
+}
+
+.game-tile.state-grey,
+.game-tile.game-grey {
+    background-color: #64748b !important;
+    border-color: #64748b !important;
+    color: #ffffff !important;
+}
 
 /* --- Virtual Keyboard --- */
-.vk-row { display: flex; gap: 4px; justify-content: center; }
+.vk-row { display: flex; gap: 4px; justify-content: center; width: 100%; }
 
 .vk-key {
-    min-width: 32px;
-    height: 46px;
+    min-width: 28px;
+    height: 44px;
     border: none;
     border-radius: 6px;
     background: #e2e8f0;
     color: var(--text-primary);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     flex: 1;
-    transition: background 0.1s;
+    transition: background 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .vk-key:hover { background: #cbd5e1; }
 .vk-key:active { background: #94a3b8; color: #fff; }
-.vk-key.key-green { background: var(--color-green); color: #fff; }
-.vk-key.key-yellow { background: var(--color-yellow); color: #fff; }
-.vk-key.key-grey { background: var(--color-grey); color: rgba(255,255,255,0.5); }
+.vk-key.state-green, .vk-key.key-green { background: var(--color-green) !important; color: #fff !important; }
+.vk-key.state-yellow, .vk-key.key-yellow { background: var(--color-yellow) !important; color: #fff !important; }
+.vk-key.state-grey, .vk-key.key-grey { background: #94a3b8 !important; color: #fff !important; opacity: 0.55; }
 .vk-key.key-backspace { background: #fecaca; color: #dc2626; }
 .vk-key.key-backspace:hover { background: #fca5a5; }
 
@@ -618,17 +648,59 @@ header {
 #custom-answer-input:focus { border-color: var(--text-primary); }
 #custom-answer-input::placeholder { color: var(--text-muted); }
 
-/* --- Animations (subtle highlight only) --- */
+/* --- Wordle Tile Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes highlight { 0% { box-shadow: 0 0 0 0 rgba(15,23,42,0.15); } 100% { box-shadow: 0 0 0 0 transparent; } }
 
-.flip-in { animation: fadeIn 0.3s ease forwards; }
-.bounce { animation: highlight 0.4s ease; }
-.shake { animation: pulse 0.3s ease; }
+@keyframes tilePopIn {
+    0% { transform: scale(0.85); opacity: 0.7; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes tileFlipIn {
+    0% {
+        transform: rotateX(0deg);
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+        color: var(--text-primary);
+    }
+    45% {
+        transform: rotateX(90deg);
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+        color: var(--text-primary);
+    }
+    55% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0deg);
+    }
+}
+
+@keyframes rowShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes winBounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-16px); }
+    60% { transform: translateY(-6px); }
+}
+
+.tile-pop { animation: tilePopIn 0.12s ease-out forwards; }
+.tile-flip { animation: tileFlipIn 0.5s ease forwards; }
+.row-shake { animation: rowShake 0.45s ease-in-out; }
+.win-bounce { animation: winBounce 0.55s ease forwards; }
+.flip-in { animation: tileFlipIn 0.5s ease forwards; }
+.bounce { animation: winBounce 0.55s ease forwards; }
+.shake { animation: rowShake 0.45s ease-in-out; }
 .pulse { animation: pulse 0.3s ease !important; }
-.pop-in { animation: fadeIn 0.15s ease; }
+.pop-in { animation: tilePopIn 0.12s ease forwards; }
 
 /* --- Scrollbar --- */
 ::-webkit-scrollbar { width: 5px; }
