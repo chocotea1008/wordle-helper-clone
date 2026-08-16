@@ -1,6 +1,7 @@
 // --- 직접 플레이 (Wordle Game) 모드 컨트롤러 ---
 
 let lastSubmittedRow = -1;
+let keyboardColorMap = {};
 
 function switchGameMode(len) {
     if (currentGameLen === len && gameAnswer) return;
@@ -17,6 +18,7 @@ function initGame(len = currentGameLen) {
     currentTypedJamos = [];
     gameOver = false;
     lastSubmittedRow = -1;
+    keyboardColorMap = {};
 
     const msg = document.getElementById('game-message');
     if (msg) {
@@ -108,6 +110,35 @@ function getPattern(guess, answer) {
     return pattern.join('');
 }
 
+function updateKeyboardSingleKey(jamo, status) {
+    const current = keyboardColorMap[jamo];
+    if (status === '초') {
+        keyboardColorMap[jamo] = 'state-green';
+    } else if (status === '노') {
+        if (current !== 'state-green') keyboardColorMap[jamo] = 'state-yellow';
+    } else if (status === '회') {
+        if (current !== 'state-green' && current !== 'state-yellow') keyboardColorMap[jamo] = 'state-grey';
+    }
+
+    document.querySelectorAll('.vk-key').forEach(btn => {
+        const char = btn.innerText.trim();
+        if (char === jamo && keyboardColorMap[char]) {
+            btn.classList.remove('state-green', 'state-yellow', 'state-grey');
+            btn.classList.add(keyboardColorMap[char]);
+        }
+    });
+}
+
+function syncAllKeyboardKeys() {
+    document.querySelectorAll('.vk-key').forEach(btn => {
+        const char = btn.innerText.trim();
+        btn.classList.remove('state-green', 'state-yellow', 'state-grey');
+        if (keyboardColorMap[char]) {
+            btn.classList.add(keyboardColorMap[char]);
+        }
+    });
+}
+
 function submitGameGuess() {
     if (gameOver) return;
 
@@ -143,11 +174,18 @@ function submitGameGuess() {
 
     renderGameBoard();
 
+    // 타일이 90도 회전하여 색상이 공개되는 순간 가상 키보드 색상도 일치하여 변경
+    pattern.forEach((pat, j) => {
+        setTimeout(() => {
+            updateKeyboardSingleKey(jamos[j], pat);
+        }, (j * 200) + 250);
+    });
+
     const msg = document.getElementById('game-message');
     const isWin = patternStr === '초'.repeat(currentGameLen);
     const isLoss = !isWin && gameHistory.length >= MAX_GUESSES;
 
-    const animDuration = (currentGameLen * 180) + 400;
+    const animDuration = (currentGameLen * 200) + 400;
 
     if (isWin) {
         gameOver = true;
@@ -182,34 +220,8 @@ function submitGameGuess() {
     }
 }
 
-function updateKeyboardState() {
-    const kbState = {};
-    gameHistory.forEach(guess => {
-        guess.jamos.forEach((jamo, idx) => {
-            const status = guess.pattern[idx];
-            const current = kbState[jamo];
-            if (status === '초') {
-                kbState[jamo] = 'state-green';
-            } else if (status === '노') {
-                if (current !== 'state-green') kbState[jamo] = 'state-yellow';
-            } else if (status === '회') {
-                if (current !== 'state-green' && current !== 'state-yellow') kbState[jamo] = 'state-grey';
-            }
-        });
-    });
-
-    document.querySelectorAll('.vk-key').forEach(btn => {
-        const char = btn.innerText.trim();
-        btn.classList.remove('state-green', 'state-yellow', 'state-grey', 'key-green', 'key-yellow', 'key-grey');
-        if (kbState[char]) {
-            btn.classList.add(kbState[char]);
-        }
-    });
-    return kbState;
-}
-
 function renderGameBoard() {
-    updateKeyboardState();
+    syncAllKeyboardKeys();
     const board = document.getElementById('game-board');
     if (!board) return;
     board.innerHTML = "";
@@ -227,20 +239,24 @@ function renderGameBoard() {
             tile.className = 'game-tile';
 
             if (guess) {
-                // 이미 제출된 과거 추측 타일
                 tile.innerText = guessJamos[j] || '';
                 tile.classList.add('filled');
-                if (guessPattern[j] === '초') tile.classList.add('state-green');
-                else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
-                else tile.classList.add('state-grey');
 
-                // 방금 제출한 행만 플립 회전 애니메이션 적용
                 if (i === lastSubmittedRow) {
-                    tile.classList.add('tile-flip');
-                    tile.style.animationDelay = `${j * 0.18}s`;
+                    // 방금 제출한 행: 시작 시 흰색 유지 -> 90도 회전 시점에 색상 공개!
+                    if (guessPattern[j] === '초') tile.classList.add('tile-flip-green');
+                    else if (guessPattern[j] === '노') tile.classList.add('tile-flip-yellow');
+                    else tile.classList.add('tile-flip-grey');
+
+                    tile.style.animationDelay = `${j * 0.2}s`;
+                } else {
+                    // 이미 과거에 회전 완료된 행: 정적 색상 유지
+                    if (guessPattern[j] === '초') tile.classList.add('state-green');
+                    else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
+                    else tile.classList.add('state-grey');
                 }
             } else if (i === gameHistory.length) {
-                // 현재 입력 중인 행
+                // 현재 타이핑 입력 중인 행
                 const char = guessJamos[j] || '';
                 tile.innerText = char;
                 if (char) {
@@ -298,6 +314,7 @@ function setCustomAnswer() {
     currentTypedJamos = [];
     gameOver = false;
     lastSubmittedRow = -1;
+    keyboardColorMap = {};
 
     const msg = document.getElementById('game-message');
     if (msg) {
