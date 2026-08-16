@@ -86,7 +86,7 @@ header {
 /* --- Layouts --- */
 #cheat-view {
     display: grid;
-    grid-template-columns: 1.1fr 1.2fr 0.9fr;
+    grid-template-columns: 360px 1.1fr 1fr;
     grid-template-areas:
         "input recommend candidates"
         "history recommend candidates"
@@ -347,18 +347,26 @@ header {
     line-height: 1.6;
 }
 
-/* --- Recommendation Items --- */
-.recommend-item {
+/* --- Recommendation Items (가로 직렬 배치) --- */
+#recommendations-container {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.recommend-item {
+    display: inline-flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
     background: #fafafa;
     border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all 0.15s ease;
-    width: 100%;
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 110px;
 }
 
 .recommend-item:hover {
@@ -369,50 +377,23 @@ header {
 .recommend-item.selected {
     border-color: var(--text-primary);
     background: #ffffff;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-}
-
-.rec-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.rec-rank {
-    min-width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: #e2e8f0;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.75rem;
-    transition: all 0.15s ease;
-}
-
-.recommend-item.selected .rec-rank {
-    background: var(--text-primary);
-    color: #ffffff;
+    box-shadow: 0 0 0 2px var(--text-primary);
 }
 
 .rec-word {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: -0.01em;
-}
-
-.rec-right {
-    text-align: right;
-    white-space: nowrap;
 }
 
 .rec-remain-val {
-    font-size: 0.95rem;
-    font-weight: 700;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: var(--color-green);
+    background: var(--color-green-bg);
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    white-space: nowrap;
 }
 
 .candidate-count { font-size: 0.85rem; font-weight: normal; }
@@ -583,17 +564,7 @@ header {
 .candidates-section { display: flex; flex-direction: column; }
 .list-container { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
 
-/* --- Responsive --- */
-@media (max-width: 1100px) {
-    #cheat-view {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas:
-            "input recommend"
-            "history candidates"
-            "guide guide";
-    }
-}
-
+/* --- Responsive (모바일 전용 768px 이하) --- */
 @media (max-width: 768px) {
     body { padding: 0.75rem; }
     
@@ -608,12 +579,16 @@ header {
     #section-history { order: 4; }
     #section-guide { order: 5; }
 
+    .recommend-item {
+        flex: 1 1 calc(50% - 0.5rem);
+    }
+
     #section-candidates .list-container {
-        max-height: 250px;
+        max-height: 220px;
         height: auto;
     }
     #section-history .history-list {
-        max-height: 250px;
+        max-height: 220px;
         height: auto;
     }
 
