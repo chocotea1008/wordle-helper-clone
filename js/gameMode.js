@@ -3,6 +3,59 @@
 let lastSubmittedRow = -1;
 let keyboardColorMap = {};
 
+// --- 애니메이션 ON/OFF 쿠키 및 LocalStorage 영구 저장 ---
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
+function setCookie(name, value, days = 365) {
+    const maxAge = days * 24 * 60 * 60;
+    document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+}
+
+function getGameAnimSetting() {
+    try {
+        const cookieVal = getCookie('wordle_game_anim');
+        if (cookieVal !== null) return cookieVal === 'true';
+        const localVal = localStorage.getItem('wordle_game_anim');
+        if (localVal !== null) return localVal === 'true';
+    } catch(e) {}
+    return true; // 기본값: ON
+}
+
+function setGameAnimSetting(enabled) {
+    try {
+        setCookie('wordle_game_anim', enabled ? 'true' : 'false', 365);
+        localStorage.setItem('wordle_game_anim', enabled ? 'true' : 'false');
+    } catch(e) {}
+}
+
+let isGameAnimEnabled = getGameAnimSetting();
+
+function updateAnimToggleButtonUI() {
+    const btn = document.getElementById('btn-toggle-anim');
+    if (!btn) return;
+    if (isGameAnimEnabled) {
+        btn.innerHTML = '애니메이션 ON 🎬';
+        btn.style.color = 'var(--color-green)';
+        btn.style.borderColor = 'var(--color-green)';
+    } else {
+        btn.innerHTML = '애니메이션 OFF ⏸️';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderColor = 'var(--border-color)';
+    }
+}
+
+function toggleGameAnimation() {
+    isGameAnimEnabled = !isGameAnimEnabled;
+    setGameAnimSetting(isGameAnimEnabled);
+    updateAnimToggleButtonUI();
+    if (typeof showToast === 'function') {
+        showToast(`애니메이션이 ${isGameAnimEnabled ? '켜졌습니다 (ON 🎬)' : '꺼졌습니다 (OFF ⏸️)'}`);
+    }
+}
+
 function switchGameMode(len) {
     if (currentGameLen === len && gameAnswer) return;
     currentGameLen = len;
@@ -19,6 +72,8 @@ function initGame(len = currentGameLen) {
     gameOver = false;
     lastSubmittedRow = -1;
     keyboardColorMap = {};
+
+    updateAnimToggleButtonUI();
 
     const msg = document.getElementById('game-message');
     if (msg) {
@@ -143,7 +198,7 @@ function submitGameGuess() {
     if (gameOver) return;
 
     if (currentTypedJamos.length !== currentGameLen) {
-        // 행 흔들림 애니메이션 피드백
+        // 행 흔들림 피드백
         const rows = document.querySelectorAll('.game-row');
         const currentRow = rows[gameHistory.length];
         if (currentRow) {
@@ -168,35 +223,44 @@ function submitGameGuess() {
     const patternStr = getPattern(jamos, gameAnswerJamos);
     const pattern = patternStr.split('');
 
-    lastSubmittedRow = gameHistory.length;
+    lastSubmittedRow = isGameAnimEnabled ? gameHistory.length : -1;
     gameHistory.push({ word: '', jamos, pattern });
     currentTypedJamos = [];
 
-    renderGameBoard();
-
-    // 타일이 90도 회전하여 색상이 공개되는 순간 가상 키보드 색상도 일치하여 변경
-    pattern.forEach((pat, j) => {
-        setTimeout(() => {
+    if (isGameAnimEnabled) {
+        renderGameBoard();
+        // 타일이 90도 회전하여 색상이 공개되는 순간 가상 키보드 색상도 일치하여 변경
+        pattern.forEach((pat, j) => {
+            setTimeout(() => {
+                updateKeyboardSingleKey(jamos[j], pat);
+            }, (j * 200) + 250);
+        });
+    } else {
+        // 애니메이션 OFF 시 즉시 키보드 색상 및 타일 반영
+        pattern.forEach((pat, j) => {
             updateKeyboardSingleKey(jamos[j], pat);
-        }, (j * 200) + 250);
-    });
+        });
+        renderGameBoard();
+    }
 
     const msg = document.getElementById('game-message');
     const isWin = patternStr === '초'.repeat(currentGameLen);
     const isLoss = !isWin && gameHistory.length >= MAX_GUESSES;
 
-    const animDuration = (currentGameLen * 200) + 400;
+    const animDuration = isGameAnimEnabled ? ((currentGameLen * 200) + 400) : 0;
 
     if (isWin) {
         gameOver = true;
         setTimeout(() => {
-            const rows = document.querySelectorAll('.game-row');
-            const winningRow = rows[gameHistory.length - 1];
-            if (winningRow) {
-                winningRow.querySelectorAll('.game-tile').forEach((t, i) => {
-                    t.classList.add('win-bounce');
-                    t.style.animationDelay = `${i * 0.08}s`;
-                });
+            if (isGameAnimEnabled) {
+                const rows = document.querySelectorAll('.game-row');
+                const winningRow = rows[gameHistory.length - 1];
+                if (winningRow) {
+                    winningRow.querySelectorAll('.game-tile').forEach((t, i) => {
+                        t.classList.add('win-bounce');
+                        t.style.animationDelay = `${i * 0.08}s`;
+                    });
+                }
             }
             if (msg) {
                 msg.innerText = `🎉 정답입니다! (${gameAnswer})`;
@@ -242,15 +306,15 @@ function renderGameBoard() {
                 tile.innerText = guessJamos[j] || '';
                 tile.classList.add('filled');
 
-                if (i === lastSubmittedRow) {
-                    // 방금 제출한 행: 시작 시 흰색 유지 -> 90도 회전 시점에 색상 공개!
+                if (i === lastSubmittedRow && isGameAnimEnabled) {
+                    // 방금 제출한 행 (애니메이션 ON): 시작 시 흰색 유지 -> 90도 회전 시점에 색상 공개!
                     if (guessPattern[j] === '초') tile.classList.add('tile-flip-green');
                     else if (guessPattern[j] === '노') tile.classList.add('tile-flip-yellow');
                     else tile.classList.add('tile-flip-grey');
 
                     tile.style.animationDelay = `${j * 0.2}s`;
                 } else {
-                    // 이미 과거에 회전 완료된 행: 정적 색상 유지
+                    // 이미 과거에 회전 완료된 행 또는 애니메이션 OFF: 즉시 정적 색상 적용
                     if (guessPattern[j] === '초') tile.classList.add('state-green');
                     else if (guessPattern[j] === '노') tile.classList.add('state-yellow');
                     else tile.classList.add('state-grey');
@@ -260,7 +324,10 @@ function renderGameBoard() {
                 const char = guessJamos[j] || '';
                 tile.innerText = char;
                 if (char) {
-                    tile.classList.add('active-input', 'tile-pop');
+                    tile.classList.add('active-input');
+                    if (isGameAnimEnabled) {
+                        tile.classList.add('tile-pop');
+                    }
                     // 이미 회색(불일치)으로 판정된 자모인 경우 키보드처럼 회백색 음영으로 미리 표시
                     if (keyboardColorMap[char] === 'state-grey') {
                         tile.classList.add('typing-grey');

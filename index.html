@@ -206,9 +206,10 @@
             </div>
 
             <div class="card" style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%; padding: 1.25rem;">
-                <div style="display: flex; gap: 0.5rem; width: 100%;">
-                    <button class="btn btn-secondary" style="flex: 1;" onclick="initGame(currentGameLen)">새 게임 시작 (무작위)</button>
-                    <button class="btn btn-secondary" style="flex: 1;" onclick="toggleCustomAnswerUI()">정답 직접 지정 ⚙️</button>
+                <div id="game-action-buttons" style="display: flex; gap: 0.5rem; width: 100%; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" style="flex: 1; min-width: 120px;" onclick="initGame(currentGameLen)">새 게임 시작 (무작위)</button>
+                    <button class="btn btn-secondary" style="flex: 1; min-width: 120px;" onclick="toggleCustomAnswerUI()">정답 직접 지정 ⚙️</button>
+                    <button class="btn btn-secondary" id="btn-toggle-anim" style="flex: 1; min-width: 120px; font-weight: 700;" onclick="toggleGameAnimation()">애니메이션 ON 🎬</button>
                 </div>
                 <div id="custom-answer-container" style="display: none; flex-direction: column; gap: 0.5rem; width: 100%;">
                     <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">정답으로 출제할 한글 단어 입력:</label>
