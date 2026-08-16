@@ -27,6 +27,14 @@ function decomposeKoreanWord(word) {
                 'ㄾ': ['ㄹ', 'ㅌ'], 'ㄿ': ['ㄹ', 'ㅍ'], 'ㅀ': ['ㄹ', 'ㅎ'], 'ㅄ': ['ㅂ', 'ㅅ'], 'ㅆ': ['ㅅ', 'ㅅ']
             };
 
+            const STANDALONE_SUB = {
+                ...JUNGSUNG_SUB,
+                ...CHOSUNG_SUB,
+                'ㄳ': ['ㄱ', 'ㅅ'], 'ㄵ': ['ㄴ', 'ㅈ'], 'ㄶ': ['ㄴ', 'ㅎ'],
+                'ㄺ': ['ㄹ', 'ㄱ'], 'ㄻ': ['ㄹ', 'ㅁ'], 'ㄼ': ['ㄹ', 'ㅂ'], 'ㄽ': ['ㄹ', 'ㅅ'],
+                'ㄾ': ['ㄹ', 'ㅌ'], 'ㄿ': ['ㄹ', 'ㅍ'], 'ㅀ': ['ㄹ', 'ㅎ'], 'ㅄ': ['ㅂ', 'ㅅ']
+            };
+
             let result = [];
             for (let i = 0; i < word.length; i++) {
                 const char = word[i];
@@ -46,6 +54,8 @@ function decomposeKoreanWord(word) {
                     const jongDecom = JONGSUNG_SUB[jongChar] || (jongChar ? [jongChar] : []);
 
                     result = result.concat(choDecom, jungDecom, jongDecom);
+                } else if (STANDALONE_SUB[char]) {
+                    result = result.concat(STANDALONE_SUB[char]);
                 } else {
                     result.push(char);
                 }
